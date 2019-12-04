@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"log"
+	"github.com/spf13/viper"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -25,10 +25,10 @@ var versionCmd = &cobra.Command{
 }
 
 func apply() {
-	fmt.Println("Rollup migrations...")
-	m, err := migrate.New(
-		"file://schema/postgres",
-		"postgres://sentimentd:sentimentd@localhost:5432/sentimentd?sslmode=disable")
+	url := viper.GetString("database.url")
+	log.Infof("Rollup migrations...\n")
+	log.Infof("Database URL: %s", url)
+	m, err := migrate.New("file://schema/postgres", url)
 	if err != nil {
 		log.Fatal(err)
 	}
