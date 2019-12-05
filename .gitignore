@@ -18,3 +18,4 @@ vendor/
 .idea
 
 # Config file
+sentimentd.yml
