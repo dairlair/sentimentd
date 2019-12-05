@@ -35,7 +35,8 @@ var brainListCmd = &cobra.Command{
 	Short: "List brains",
 	Long: `List brains`,
 	Run: func(cmd *cobra.Command, args []string) {
-		application.BrainList()
+		brains, err := application.BrainList()
+		fmt.Printf("Brains: %v, error: %v\n", brains, err)
 	},
 }
 

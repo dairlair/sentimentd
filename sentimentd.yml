@@ -1,2 +1,2 @@
 database:
-  url: postgres://sentimentd:sentimentd@localhost:5432/sentimentds?sslmode=disable
+  url: postgres://sentimentd:sentimentd@localhost:5432/sentimentd?sslmode=disable

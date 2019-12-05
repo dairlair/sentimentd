@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/dairlair/sentimentd/pkg/domain"
+	"github.com/dairlair/sentimentd/pkg/app"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -12,9 +12,9 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "sentimentd",
 		Short: "short",
-		Long: `long`,
+		Long:  `long`,
 	}
-	application *domain.App
+	application *app.App
 )
 
 func init() {
@@ -25,7 +25,12 @@ func init() {
 		log.Warn(err)
 	}
 	// Config is read, lest create application...
-	application = &domain.App{}
+	config := app.Config{
+		Database: struct{ URL string }{
+			URL: viper.GetString("database.url"),
+		},
+	}
+	application = app.NewApp(config)
 }
 
 // Execute executes the root command.
