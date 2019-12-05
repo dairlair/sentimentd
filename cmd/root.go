@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/dairlair/sentimentd/pkg/app"
+	"github.com/dairlair/sentimentd/pkg/domain"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -14,7 +14,7 @@ var (
 		Short: "short",
 		Long: `long`,
 	}
-	application *app.App
+	application *domain.App
 )
 
 func init() {
@@ -25,7 +25,7 @@ func init() {
 		log.Warn(err)
 	}
 	// Config is read, lest create application...
-	application = &app.App{}
+	application = &domain.App{}
 }
 
 // Execute executes the root command.
