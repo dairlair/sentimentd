@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"
 	"github.com/dairlair/sentimentd/pkg/infrastructure"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/repository"
@@ -23,7 +22,6 @@ type App struct {
 }
 
 func NewApp(config Config) *App {
-	fmt.Printf("Config for app: %v\n", config)
 	app := &App{
 		config: &config,
 	}

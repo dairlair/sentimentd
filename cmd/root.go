@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"github.com/dairlair/sentimentd/pkg/app"
+	"github.com/dairlair/sentimentd/pkg/infrastructure/helpers"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 	"strings"
 )
 
@@ -15,13 +17,12 @@ var (
 		Long:  `long`,
 	}
 	application *app.App
+	console helpers.Console
 )
 
 func init() {
 	configureViper()
-	if err := viper.ReadInConfig(); err == nil {
-		log.Info("Using config file:", viper.ConfigFileUsed())
-	} else {
+	if err := viper.ReadInConfig(); err != nil {
 		log.Warn(err)
 	}
 	// Config is read, lest create application...
@@ -31,6 +32,7 @@ func init() {
 		},
 	}
 	application = app.NewApp(config)
+	console = helpers.NewConsole(os.Stdout)
 }
 
 // Execute executes the root command.

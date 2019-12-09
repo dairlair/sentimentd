@@ -1,18 +1,13 @@
 package model
 
-import (
-	"github.com/jinzhu/gorm"
-)
-
 type Brain struct {
-	gorm.Model
-	BrainID int64
+	Model
 	Name string
 	Description string
 }
 
 func (brain *Brain) GetID() int64 {
-	return brain.BrainID
+	return brain.Model.ID
 }
 
 func (brain *Brain) GetName() string {

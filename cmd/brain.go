@@ -36,7 +36,10 @@ var brainListCmd = &cobra.Command{
 	Long: `List brains`,
 	Run: func(cmd *cobra.Command, args []string) {
 		brains, err := application.BrainList()
-		fmt.Printf("Brains: %v, error: %v\n", brains, err)
+		if err != nil {
+			return
+		}
+		console.PrintBrains(brains)
 	},
 }
 
@@ -59,16 +62,3 @@ var brainRemoveCmd = &cobra.Command{
 		fmt.Println("Remove: " + strings.Join(args, ";"))
 	},
 }
-
-//func apply() {
-//	url := viper.GetString("database.url")
-//	log.Infof("Rollup migrations...\n")
-//	log.Infof("Database URL: %s", url)
-//	m, err := migrate.New("file://schema/postgres", url)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	if err := m.Up(); err != nil {
-//		log.Fatal(err)
-//	}
-//}
