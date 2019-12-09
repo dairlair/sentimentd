@@ -6,13 +6,13 @@ import (
 
 type Brain struct {
 	gorm.Model
-	ID int64
+	BrainID int64
 	Name string
 	Description string
 }
 
 func (brain *Brain) GetID() int64 {
-	return brain.ID
+	return brain.BrainID
 }
 
 func (brain *Brain) GetName() string {

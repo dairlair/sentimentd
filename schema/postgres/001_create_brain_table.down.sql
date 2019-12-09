@@ -1,1 +1,1 @@
-DROP TABLE brain;
+DROP TABLE brains;

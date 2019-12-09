@@ -6,6 +6,8 @@ import (
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"
 	. "github.com/dairlair/sentimentd/pkg/infrastructure/model"
 	"github.com/jinzhu/gorm"
+	"log"
+	"os"
 )
 
 type BrainRepository struct {
@@ -21,8 +23,9 @@ func NewBrainRepository(db *gorm.DB) BrainRepositoryInterface {
 }
 
 func (repo *BrainRepository) GetAll() ([]BrainInterface, error) {
-	var brains = []Brain{}
-	repo.repository.db.Find(&brains)
+	brains := []Brain {}
+	repo.repository.db.SetLogger(log.New(os.Stdout, "\n", 0))
+	repo.repository.db.Debug().Find(&brains)
 
 	// @See https://github.com/golang/go/wiki/InterfaceSlice#what-can-i-do-instead
 	brainsInterfaces := make([]BrainInterface, len(brains))
