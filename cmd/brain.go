@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/dairlair/sentimentd/cmd/utils"
 	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/spf13/cobra"
-	"strconv"
-	"strings"
 )
 
 func init() {
@@ -25,10 +24,8 @@ var brainCmd = &cobra.Command{
 var brainCreateCmd = &cobra.Command{
 	Use:   "create <name> [description]",
 	Short: "Create a brain",
-	Long: `Create a brain`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Create: " + strings.Join(args, ";"))
 		var name = args[0]
 		var description = ""
 		if len(args) > 1 {
@@ -36,6 +33,8 @@ var brainCreateCmd = &cobra.Command{
 		}
 		brain, err := application.CreateBrain(name, description)
 		if err != nil {
+			fmt.Printf("Error: %s\n", err)
+
 			return
 		}
 		console.PrintBrains([]entity.BrainInterface{brain})
@@ -45,10 +44,11 @@ var brainCreateCmd = &cobra.Command{
 var brainListCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List brains",
-	Long: `List brains`,
 	Run: func(cmd *cobra.Command, args []string) {
 		brains, err := application.BrainList()
 		if err != nil {
+			fmt.Printf("Error: %s\n", err)
+
 			return
 		}
 		console.PrintBrains(brains)
@@ -58,44 +58,33 @@ var brainListCmd = &cobra.Command{
 var brainInspectCmd = &cobra.Command{
 	Use:   "inspect <id>",
 	Short: "Display detailed information on one or more brains",
-	Long: `Display detailed information on one or more brains`,
 	Args: cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		// @TODO Refactor that with another mass command
-		for _, arg := range args {
-			id, err := strconv.ParseInt(arg, 10, 64)
-			if err != nil {
-				fmt.Printf("Error: %s is invalid reference", arg)
-				continue
-			}
+		utils.IterateArgs(args, func (id int64) {
 			brain, err := application.GetBrainByID(id)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err)
-			} else {
-				console.PrintBrains([]entity.BrainInterface{brain})
+
+				return
 			}
-		}
+			console.PrintBrains([]entity.BrainInterface{brain})
+		})
 	},
 }
 
 var brainDeleteCmd = &cobra.Command{
 	Use:   "rm <id>",
 	Short: "Remove one or more brains",
-	Long: `Remove one or more brains`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		for _, arg := range args {
-			id, err := strconv.ParseInt(arg, 10, 64)
-			if err != nil {
-				fmt.Printf("Error: %s is invalid reference", arg)
-				continue
-			}
-			err = application.DeleteBrain(id)
+		utils.IterateArgs(args, func (id int64) {
+			err := application.DeleteBrain(id)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err)
-			} else {
-				fmt.Printf("Deleted: %d\n", id)
+
+				return
 			}
-		}
+			fmt.Printf("Deleted: %d\n", id)
+		})
 	},
 }

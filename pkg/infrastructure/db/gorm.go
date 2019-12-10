@@ -1,4 +1,4 @@
-package infrastructure
+package db
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 )
 
 //returns a handle to the DB object
-func GetDB(url *url.URL) *gorm.DB {
+func CreateDBConnection(url *url.URL) *gorm.DB {
 
 	if url.Scheme != "postgres" {
 		logrus.Fatalf("Unsupported database scheme [%s]", url.Scheme)

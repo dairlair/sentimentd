@@ -23,11 +23,12 @@ func NewBrainRepository(db *gorm.DB) BrainRepositoryInterface {
 
 func (repo *BrainRepository) GetAll() ([]BrainInterface, error) {
 	var brains []Brain
-	repo.repository.db.Find(&brains)
+	if err := repo.repository.db.Find(&brains).Error; err != nil {
+		return nil, err
+	}
 
 	// @See https://github.com/golang/go/wiki/InterfaceSlice#what-can-i-do-instead
 	brainsInterfaces := make([]BrainInterface, len(brains))
-
 	for i, brain := range brains {
 		copiedBrain := brain
 		brainsInterfaces[i] = &copiedBrain
@@ -39,14 +40,18 @@ func (repo *BrainRepository) GetAll() ([]BrainInterface, error) {
 func (repo *BrainRepository) GetByID(id int64) (BrainInterface, error) {
 	var brain Brain
 	brain.Model.ID = id
-	repo.repository.db.First(&brain)
+	if err := repo.repository.db.First(&brain).Error; err != nil {
+		return nil, err
+	}
 
 	return &brain, nil
 }
 
 func (repo *BrainRepository) Create(name string, description string) (BrainInterface, error) {
 	brain := Brain{Name: name, Description: description}
-	repo.repository.db.Create(&brain)
+	if err := repo.repository.db.Create(&brain).Error; err != nil {
+		return nil, err
+	}
 
 	return &brain, nil
 }
@@ -55,7 +60,14 @@ func (repo *BrainRepository) Delete(id int64) error {
 	var brain Brain
 	brain.Model.ID = id
 
-	if repo.repository.db.Delete(&brain).RowsAffected != 1 {
+	dbc := repo.repository.db.Delete(&brain)
+
+	if err := dbc.Error; err != nil {
+		
+		return err
+	}
+
+	if dbc.RowsAffected != 1 {
 
 		return errors.New(fmt.Sprintf("no such brain: %d", id))
 	}

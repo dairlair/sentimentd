@@ -2,7 +2,7 @@ package app
 
 import (
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"
-	"github.com/dairlair/sentimentd/pkg/infrastructure"
+	"github.com/dairlair/sentimentd/pkg/infrastructure/db"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/repository"
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
@@ -34,7 +34,7 @@ func (app *App) Init() {
 	if err != nil {
 		log.Fatalf("Can not parse database URL. %s", err)
 	}
-	app.db = infrastructure.GetDB(databaseURL)
+	app.db = db.CreateDBConnection(databaseURL)
 	app.brainRepository = repository.NewBrainRepository(app.db)
 }
 
