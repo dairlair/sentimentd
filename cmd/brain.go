@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/spf13/cobra"
+	"strconv"
 	"strings"
 )
 
@@ -12,7 +13,7 @@ func init() {
 	brainCmd.AddCommand(brainCreateCmd)
 	brainCmd.AddCommand(brainListCmd)
 	brainCmd.AddCommand(brainInspectCmd)
-	brainCmd.AddCommand(brainRemoveCmd)
+	brainCmd.AddCommand(brainDeleteCmd)
 }
 
 var brainCmd = &cobra.Command{
@@ -64,12 +65,24 @@ var brainInspectCmd = &cobra.Command{
 	},
 }
 
-var brainRemoveCmd = &cobra.Command{
+var brainDeleteCmd = &cobra.Command{
 	Use:   "rm <id>",
 	Short: "Remove one or more brains",
 	Long: `Remove one or more brains`,
-	Args: cobra.MinimumNArgs(0),
+	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Remove: " + strings.Join(args, ";"))
+		for _, arg := range args {
+			id, err := strconv.ParseInt(arg, 10, 64)
+			if err != nil {
+				fmt.Printf("Error: %s is invalid reference", arg)
+				continue
+			}
+			err = application.DeleteBrain(id)
+			if err != nil {
+				fmt.Printf("Error: %s\n", err)
+			} else {
+				fmt.Printf("Deleted: %d\n", id)
+			}
+		}
 	},
 }

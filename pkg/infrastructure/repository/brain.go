@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+	"fmt"
 	. "github.com/dairlair/sentimentd/pkg/domain/entity"
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"
 	. "github.com/dairlair/sentimentd/pkg/infrastructure/model"
@@ -38,4 +40,15 @@ func (repo *BrainRepository) Create(name string, description string) (BrainInter
 	brain := Brain{Name: name, Description: description}
 	repo.repository.db.Create(&brain)
 	return &brain, nil
+}
+
+func (repo *BrainRepository) Delete(id int64) error {
+	var brain Brain
+	brain.Model.ID = id
+
+	if repo.repository.db.Delete(&brain).RowsAffected != 1 {
+		return errors.New(fmt.Sprintf("no such brain: %d", id))
+	}
+
+	return nil
 }
