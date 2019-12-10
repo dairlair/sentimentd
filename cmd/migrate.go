@@ -8,14 +8,13 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-
 )
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(migrateCmd)
 }
 
-var versionCmd = &cobra.Command{
+var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "Apply migrations to the database",
 	Long:  `Apply the database migrations from ./schema/postgres directory`,

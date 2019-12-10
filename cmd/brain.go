@@ -72,7 +72,7 @@ var brainInspectCmd = &cobra.Command{
 			if err != nil {
 				fmt.Printf("Error: %s\n", err)
 			} else {
-				fmt.Printf("Inspect: %d\n", brain.GetID())
+				console.PrintBrains([]entity.BrainInterface{brain})
 			}
 		}
 	},
