@@ -6,4 +6,5 @@ import (
 
 type BrainRepositoryInterface interface {
 	GetAll() ([]BrainInterface, error)
+	Create(name string, description string) (BrainInterface, error)
 }

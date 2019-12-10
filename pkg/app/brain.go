@@ -7,3 +7,7 @@ import (
 func (app *App) BrainList () ([]BrainInterface, error) {
 	return app.brainRepository.GetAll()
 }
+
+func (app *App) CreateBrain (name string, description string) (BrainInterface, error) {
+	return app.brainRepository.Create(name, description)
+}

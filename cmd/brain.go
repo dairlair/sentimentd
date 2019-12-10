@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/spf13/cobra"
 	"strings"
 )
@@ -24,9 +25,19 @@ var brainCreateCmd = &cobra.Command{
 	Use:   "create <name> [description]",
 	Short: "Create a brain",
 	Long: `Create a brain`,
-	Args: cobra.MinimumNArgs(0),
+	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("Create: " + strings.Join(args, ";"))
+		var name = args[0]
+		var description = ""
+		if len(args) > 1 {
+			description = args[1]
+		}
+		brain, err := application.CreateBrain(name, description)
+		if err != nil {
+			return
+		}
+		console.PrintBrains([]entity.BrainInterface{brain})
 	},
 }
 

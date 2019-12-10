@@ -33,3 +33,9 @@ func (repo *BrainRepository) GetAll() ([]BrainInterface, error) {
 
 	return brainsInterfaces, nil
 }
+
+func (repo *BrainRepository) Create(name string, description string) (BrainInterface, error) {
+	brain := Brain{Name: name, Description: description}
+	repo.repository.db.Create(&brain)
+	return &brain, nil
+}
