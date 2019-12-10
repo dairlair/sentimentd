@@ -16,7 +16,7 @@ type BrainRepository struct {
 func NewBrainRepository(db *gorm.DB) BrainRepositoryInterface {
 	return &BrainRepository{
 		repository: repository{
-			db:db,
+			db: db,
 		},
 	}
 }
@@ -36,9 +36,18 @@ func (repo *BrainRepository) GetAll() ([]BrainInterface, error) {
 	return brainsInterfaces, nil
 }
 
+func (repo *BrainRepository) GetByID(id int64) (BrainInterface, error) {
+	var brain Brain
+	brain.Model.ID = id
+	repo.repository.db.First(&brain)
+
+	return &brain, nil
+}
+
 func (repo *BrainRepository) Create(name string, description string) (BrainInterface, error) {
 	brain := Brain{Name: name, Description: description}
 	repo.repository.db.Create(&brain)
+
 	return &brain, nil
 }
 
@@ -47,6 +56,7 @@ func (repo *BrainRepository) Delete(id int64) error {
 	brain.Model.ID = id
 
 	if repo.repository.db.Delete(&brain).RowsAffected != 1 {
+
 		return errors.New(fmt.Sprintf("no such brain: %d", id))
 	}
 

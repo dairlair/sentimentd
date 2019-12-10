@@ -61,7 +61,20 @@ var brainInspectCmd = &cobra.Command{
 	Long: `Display detailed information on one or more brains`,
 	Args: cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Inspect: " + strings.Join(args, ";"))
+		// @TODO Refactor that with another mass command
+		for _, arg := range args {
+			id, err := strconv.ParseInt(arg, 10, 64)
+			if err != nil {
+				fmt.Printf("Error: %s is invalid reference", arg)
+				continue
+			}
+			brain, err := application.GetBrainByID(id)
+			if err != nil {
+				fmt.Printf("Error: %s\n", err)
+			} else {
+				fmt.Printf("Inspect: %d\n", brain.GetID())
+			}
+		}
 	},
 }
 
