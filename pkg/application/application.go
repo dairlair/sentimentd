@@ -1,4 +1,4 @@
-package app
+package application
 
 import (
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"

@@ -31,7 +31,7 @@ var brainCreateCmd = &cobra.Command{
 		if len(args) > 1 {
 			description = args[1]
 		}
-		brain, err := application.CreateBrain(name, description)
+		brain, err := app.CreateBrain(name, description)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
 
@@ -45,7 +45,7 @@ var brainListCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List brains",
 	Run: func(cmd *cobra.Command, args []string) {
-		brains, err := application.BrainList()
+		brains, err := app.BrainList()
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
 
@@ -61,7 +61,7 @@ var brainInspectCmd = &cobra.Command{
 	Args: cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.IterateArgs(args, func (id int64) {
-			brain, err := application.GetBrainByID(id)
+			brain, err := app.GetBrainByID(id)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err)
 
@@ -78,7 +78,7 @@ var brainDeleteCmd = &cobra.Command{
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		utils.IterateArgs(args, func (id int64) {
-			err := application.DeleteBrain(id)
+			err := app.DeleteBrain(id)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err)
 

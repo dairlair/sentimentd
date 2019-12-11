@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/dairlair/sentimentd/pkg/app"
+	"github.com/dairlair/sentimentd/pkg/application"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/helpers"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -16,7 +16,7 @@ var (
 		Short: "short",
 		Long:  `long`,
 	}
-	application *app.App
+	app *application.App
 	console helpers.Console
 )
 
@@ -26,12 +26,12 @@ func init() {
 		log.Warn(err)
 	}
 	// Config is read, lest create application...
-	config := app.Config{
+	config := application.Config{
 		Database: struct{ URL string }{
 			URL: viper.GetString("database.url"),
 		},
 	}
-	application = app.NewApp(config)
+	app = application.NewApp(config)
 	console = helpers.NewConsole(os.Stdout)
 }
 
