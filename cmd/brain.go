@@ -24,7 +24,7 @@ var brainCmd = &cobra.Command{
 var brainCreateCmd = &cobra.Command{
 	Use:   "create <name> [description]",
 	Short: "Create a brain",
-	Args: cobra.MinimumNArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var name = args[0]
 		var description = ""
@@ -58,9 +58,9 @@ var brainListCmd = &cobra.Command{
 var brainInspectCmd = &cobra.Command{
 	Use:   "inspect <id>",
 	Short: "Display detailed information on one or more brains",
-	Args: cobra.MinimumNArgs(0),
+	Args:  cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.IterateArgs(args, func (id int64) {
+		utils.IterateArgs(args, func(id int64) {
 			brain, err := app.GetBrainByID(id)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err)
@@ -75,9 +75,9 @@ var brainInspectCmd = &cobra.Command{
 var brainDeleteCmd = &cobra.Command{
 	Use:   "rm <id>",
 	Short: "Remove one or more brains",
-	Args: cobra.MinimumNArgs(1),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		utils.IterateArgs(args, func (id int64) {
+		utils.IterateArgs(args, func(id int64) {
 			err := app.DeleteBrain(id)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err)

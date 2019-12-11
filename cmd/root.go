@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/dairlair/sentimentd/pkg/application"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/helpers"
+	"github.com/dairlair/sentimentd/pkg/interface/cli"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,6 +34,9 @@ func init() {
 	}
 	app = application.NewApp(config)
 	console = helpers.NewConsole(os.Stdout)
+
+	cmdFactory := cli.NewCmdFactory(app, os.Stdin, os.Stdout, os.Stderr)
+	rootCmd.AddCommand(cmdFactory.NewCmdTrain())
 }
 
 // Execute executes the root command.
