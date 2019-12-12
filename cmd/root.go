@@ -35,7 +35,7 @@ func init() {
 	app = application.NewApp(config)
 	console = helpers.NewConsole(os.Stdout)
 
-	cmdFactory := cli.NewCmdFactory(app, os.Stdin, os.Stdout, os.Stderr)
+	cmdFactory := cli.NewCommandsRunner(app, os.Stdin, os.Stdout, os.Stderr)
 	rootCmd.AddCommand(cmdFactory.NewCmdTrain())
 }
 

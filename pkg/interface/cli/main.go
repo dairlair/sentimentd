@@ -5,7 +5,7 @@
 //   * the output stream (standard and error).
 //
 // How it works:
-//   1. You create CmdFactory using the NewCmdFactory function with app, in, out, err.
+//   1. You create CommandsRunner using the NewCommandsRunner function with app, in, out, err.
 //   2. The created factory returns Cobra command which interact with app and in/out/err streams.
 //   3. You attach these command anywhere.
 
@@ -16,15 +16,15 @@ import (
 	"io"
 )
 
-type CmdFactory struct {
+type CommandsRunner struct {
 	app *application.App
 	in io.Reader
 	out io.Writer
 	err io.Writer
 }
 
-func NewCmdFactory(app *application.App, in io.Reader, out, err io.Writer) *CmdFactory {
-	return &CmdFactory{
+func NewCommandsRunner(app *application.App, in io.Reader, out, err io.Writer) *CommandsRunner {
+	return &CommandsRunner{
 		app: app,
 		in:  in,
 		out: out,
