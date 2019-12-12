@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	. "github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/dairlair/sentimentd/pkg/interface/cli/util"
@@ -23,32 +24,34 @@ Find more information at: https://google.com`,
 			}
 
 			li := util.NewLineIterator(runner.in)
+			// @TODO Implement runner.Iterate method for similar loops with reading from input stream
+			var samples []Sample
 			for {
 				line, err := li.Next()
 				if err != nil {
 					if err == io.EOF {
 						break
-					} else {
-						// @TODO Move this annoying calls to Out() and Error() methods of command runner.
-						_, _ = fmt.Fprintf(runner.err, "error: %s\n", err)
 					}
+					runner.Err(err)
 				}
 
 				parts := strings.Split(string(line), " ")
 				if len(parts) < 2 {
-					_, _ = fmt.Fprintf(runner.err, "error: to few arguments to train\n")
+					runner.Err(errors.New("to few arguments to train"))
 					continue
 				}
 
-				err = runner.app.Train(id, Sample{
+				sample := Sample{
 					Sentence: parts[0],
 					Classes:  parts[1:],
-				})
+				}
+				samples = append(samples, sample)
 				if err != nil {
-					_, _ = fmt.Fprintf(runner.err, "error: %s\n", err)
+					runner.Err(err)
 				}
 			}
-			_, _ = fmt.Fprintf(runner.out, "the training is finished\n")
+			err = runner.app.Train(id, samples)
+			runner.Out("the training is finished")
 		},
 	}
 }

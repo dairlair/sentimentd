@@ -2,6 +2,7 @@ package application
 
 import (
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"
+	. "github.com/dairlair/sentimentd/pkg/domain/service"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/db"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/repository"
 	"github.com/jinzhu/gorm"
@@ -19,6 +20,8 @@ type App struct {
 	db *gorm.DB
 	config *Config
 	brainRepository BrainRepositoryInterface
+	classRepository ClassRepositoryInterface
+	trainService *TrainService
 }
 
 func NewApp(config Config) *App {
@@ -36,6 +39,8 @@ func (app *App) Init() {
 	}
 	app.db = db.CreateDBConnection(databaseURL)
 	app.brainRepository = repository.NewBrainRepository(app.db)
+	app.classRepository = repository.NewClassRepository(app.db)
+	app.trainService = NewTrainService(app.classRepository)
 }
 
 func (app *App) Destroy() {

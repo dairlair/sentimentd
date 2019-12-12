@@ -12,6 +12,7 @@
 package cli
 
 import (
+	"fmt"
 	"github.com/dairlair/sentimentd/pkg/application"
 	"io"
 )
@@ -29,5 +30,19 @@ func NewCommandsRunner(app *application.App, in io.Reader, out, err io.Writer) *
 		in:  in,
 		out: out,
 		err: err,
+	}
+}
+
+func (runner *CommandsRunner) Out (s string) {
+	writeToStream(runner.out, fmt.Sprintf("%s\n", s))
+}
+
+func (runner *CommandsRunner) Err (err error) {
+	writeToStream(runner.err, fmt.Sprintf("error: %s\n", err))
+}
+
+func writeToStream(stream io.Writer, s string) {
+	if _, err := fmt.Fprintf(stream, s); err != nil {
+		panic("can not write to the output stream")
 	}
 }

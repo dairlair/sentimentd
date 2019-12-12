@@ -2,6 +2,10 @@
 
 High-performance sentiment analyze service
 
+## Features
+
+* Multi-label classification 
+
 # Operations
 
 ## Build binary
@@ -15,3 +19,7 @@ make build
 ```shell script
 ./build/sentimentd migrate
 ```
+
+# TODO
+
+Calculate a time and space complexity 
