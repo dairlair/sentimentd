@@ -5,5 +5,5 @@ import (
 )
 
 func (app *App) Train (brainID int64, samples []Sample) error {
-	return app.trainService.Train(brainID, samples)
+	return app.trainingService.Train(brainID, samples)
 }

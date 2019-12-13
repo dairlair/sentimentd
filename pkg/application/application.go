@@ -17,11 +17,11 @@ type Config struct {
 }
 
 type App struct {
-	db *gorm.DB
-	config *Config
+	db              *gorm.DB
+	config          *Config
 	brainRepository BrainRepositoryInterface
 	classRepository ClassRepositoryInterface
-	trainService *TrainService
+	trainingService *TrainingService
 }
 
 func NewApp(config Config) *App {
@@ -40,7 +40,7 @@ func (app *App) Init() {
 	app.db = db.CreateDBConnection(databaseURL)
 	app.brainRepository = repository.NewBrainRepository(app.db)
 	app.classRepository = repository.NewClassRepository(app.db)
-	app.trainService = NewTrainService(app.classRepository)
+	app.trainingService = NewTrainingService(NewClassService(app.classRepository))
 }
 
 func (app *App) Destroy() {
