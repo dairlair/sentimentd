@@ -39,8 +39,7 @@ func (repo *BrainRepository) GetAll() ([]BrainInterface, error) {
 
 func (repo *BrainRepository) GetByID(id int64) (BrainInterface, error) {
 	var brain Brain
-	brain.Model.ID = id
-	if err := repo.repository.db.First(&brain).Error; err != nil {
+	if err := repo.repository.db.First(&brain, id).Error; err != nil {
 		return nil, err
 	}
 
@@ -57,10 +56,7 @@ func (repo *BrainRepository) Create(name string, description string) (BrainInter
 }
 
 func (repo *BrainRepository) Delete(id int64) error {
-	var brain Brain
-	brain.Model.ID = id
-
-	dbc := repo.repository.db.Delete(&brain)
+	dbc := repo.repository.db.Delete(Brain{}, id)
 
 	if err := dbc.Error; err != nil {
 		

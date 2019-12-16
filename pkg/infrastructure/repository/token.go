@@ -30,7 +30,7 @@ func (repo *TokenRepository) Create(brainID int64, text string) (TokenInterface,
 
 func (repo *TokenRepository) FindByBrainAndText(brainID int64, text string) (TokenInterface, error) {
 	token := Token{BrainID: brainID, Text:text}
-	if err := repo.repository.db.Create(&token).Error; err != nil {
+	if err := repo.repository.db.Where(token).First(&token).Error; err != nil {
 		return nil, err
 	}
 
