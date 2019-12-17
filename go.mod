@@ -3,6 +3,7 @@ module github.com/dairlair/sentimentd
 go 1.12
 
 require (
+	github.com/cheggaaa/pb/v3 v3.0.3
 	github.com/golang-migrate/migrate/v4 v4.7.0
 	github.com/jinzhu/gorm v1.9.11
 	github.com/olekukonko/tablewriter v0.0.4 // indirect

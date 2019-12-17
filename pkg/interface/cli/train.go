@@ -1,8 +1,7 @@
 package cli
 
 import (
-	"bufio"
-	"errors"
+	"encoding/csv"
 	"fmt"
 	. "github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/dairlair/sentimentd/pkg/interface/cli/util"
@@ -11,6 +10,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	pb "github.com/cheggaaa/pb/v3"
 )
 
 func (runner *CommandsRunner) NewCmdTrain() *cobra.Command {
@@ -49,21 +49,28 @@ func trainFromFile(runner *CommandsRunner, brainID int64, filename string) {
 }
 
 func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
-	scanner := bufio.NewScanner(in)
+	reader := csv.NewReader(in)
 	var samples []Sample
-	for scanner.Scan() {
-		parts := strings.Split(scanner.Text(), " ")
-		if len(parts) < 2 {
-			runner.Err(errors.New("to few arguments to train"))
-			continue
+	for {
+		columns, err := reader.Read()
+		if err == io.EOF {
+			break
 		}
+		if err != nil {
+			runner.Err(err)
+		}
+		// runner.Out(fmt.Sprintf("Line: %v", strings.Join(columns, ";s")))
 		sample := Sample{
-			Sentence: parts[0],
-			Classes:  parts[1:],
+			Sentence: columns[1],
+			Classes: strings.Split(columns[0], ","),
 		}
 		samples = append(samples, sample)
 	}
-	result, err := runner.app.Train(brainID, samples)
+	bar := pb.StartNew(len(samples))
+	result, err := runner.app.Train(brainID, samples, func () {
+		bar.Increment()
+	})
+	bar.Finish()
 	if err != nil {
 		log.Fatalf("training error: %s\n", err)
 	}

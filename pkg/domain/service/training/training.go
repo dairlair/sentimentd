@@ -4,11 +4,9 @@
 package training
 
 import (
-	"fmt"
 	. "github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/dairlair/sentimentd/pkg/domain/service"
 	"github.com/dairlair/sentimentd/pkg/domain/service/training/result"
-	"strings"
 )
 
 type TokenizerInterface interface {
@@ -25,7 +23,7 @@ func NewTrainingService(
 	tokenizer TokenizerInterface,
 	tokenService service.TokenServiceInterface,
 	classService service.ClassServiceInterface,
-	) *TrainingService {
+) *TrainingService {
 	return &TrainingService{
 		tokenizer:    tokenizer,
 		tokenService: tokenService,
@@ -33,19 +31,14 @@ func NewTrainingService(
 	}
 }
 
-func (service TrainingService) Train (brainID int64, samples []Sample) (result.TrainingResult, error) {
+func (service TrainingService) Train(brainID int64, samples []Sample, cb func()) (result.TrainingResult, error) {
 	resultsCollector := result.NewTrainingResult()
-	fmt.Printf("Train Brain #%d\n", brainID)
 	for _, sample := range samples {
-		fmt.Printf("Sample: \n")
-		fmt.Printf("  sentence: %s\n", sample.Sentence)
-		fmt.Printf("  classes: %s\n", strings.Join(sample.Classes, ", "))
 		for _, label := range sample.Classes {
 			class, err := service.classService.FindOrCreate(brainID, label)
 			if err != nil {
 				return *resultsCollector, err
 			}
-			fmt.Printf("class retrieved successfully: %d#%s from %s\n", class.GetID(), class.GetLabel(), label)
 			resultsCollector.IncClassCount(class.GetID())
 
 			texts := service.tokenizer.Tokenize(sample.Sentence)
@@ -54,12 +47,12 @@ func (service TrainingService) Train (brainID int64, samples []Sample) (result.T
 				if err != nil {
 					return *resultsCollector, err
 				}
-				fmt.Printf("token retrieved successfully: %d#%s from %s\n", class.GetID(), token.GetText(), text)
 				resultsCollector.IncTokenCount(class.GetID(), token.GetID())
 			}
 
 			resultsCollector.IncSamplesCount()
 		}
+		cb()
 	}
 
 	return *resultsCollector, nil
