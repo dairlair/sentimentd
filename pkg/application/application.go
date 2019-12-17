@@ -3,6 +3,8 @@ package application
 import (
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"
 	. "github.com/dairlair/sentimentd/pkg/domain/service"
+	"github.com/dairlair/sentimentd/pkg/domain/service/tokenizer"
+	"github.com/dairlair/sentimentd/pkg/domain/service/training"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/db"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/repository"
 	"github.com/jinzhu/gorm"
@@ -21,7 +23,7 @@ type App struct {
 	config          *Config
 	brainRepository BrainRepositoryInterface
 	classRepository ClassRepositoryInterface
-	trainingService *TrainingService
+	trainingService *training.TrainingService
 }
 
 func NewApp(config Config) *App {
@@ -40,7 +42,11 @@ func (app *App) Init() {
 	app.db = db.CreateDBConnection(databaseURL)
 	app.brainRepository = repository.NewBrainRepository(app.db)
 	app.classRepository = repository.NewClassRepository(app.db)
-	app.trainingService = NewTrainingService(NewClassService(app.classRepository))
+	tokenRepository := repository.NewTokenRepository(app.db)
+	defaultTokenizer := tokenizer.NewTokenizer()
+	tokenService := NewTokenService(tokenRepository)
+	classService := NewClassService(app.classRepository)
+	app.trainingService = training.NewTrainingService(&defaultTokenizer, tokenService, classService)
 }
 
 func (app *App) Destroy() {

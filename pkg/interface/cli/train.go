@@ -63,9 +63,10 @@ func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 		}
 		samples = append(samples, sample)
 	}
-	err := runner.app.Train(brainID, samples)
+	result, err := runner.app.Train(brainID, samples)
 	if err != nil {
 		log.Fatalf("training error: %s\n", err)
 	}
 	runner.Out("the training is finished")
+	runner.Out(fmt.Sprintf("result: %v", result))
 }
