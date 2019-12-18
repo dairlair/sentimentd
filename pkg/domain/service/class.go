@@ -10,10 +10,6 @@ type ClassService struct {
 	classRepository ClassRepositoryInterface
 }
 
-type ClassServiceInterface interface {
-	FindOrCreate (brainID int64, label string) (ClassInterface, error)
-}
-
 func NewClassService(classRepository ClassRepositoryInterface) *ClassService {
 	return &ClassService{
 		classRepository: classRepository,

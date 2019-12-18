@@ -5,55 +5,78 @@ package training
 
 import (
 	. "github.com/dairlair/sentimentd/pkg/domain/entity"
-	"github.com/dairlair/sentimentd/pkg/domain/service"
-	"github.com/dairlair/sentimentd/pkg/domain/service/training/result"
+	. "github.com/dairlair/sentimentd/pkg/domain/service/training/result"
 )
 
 type TokenizerInterface interface {
 	Tokenize(string) []string
 }
 
+type ResultsRepositoryInterface interface {
+	SaveResult(result TrainingResult) error
+}
+
+type ClassServiceInterface interface {
+	FindOrCreate (brainID int64, label string) (ClassInterface, error)
+}
+
+type TokenServiceInterface interface {
+	FindOrCreate (brainID int64, text string) (TokenInterface, error)
+}
+
 type TrainingService struct {
+	resultsRepository ResultsRepositoryInterface
+	classService ClassServiceInterface
 	tokenizer    TokenizerInterface
-	tokenService service.TokenServiceInterface
-	classService service.ClassServiceInterface
+	tokenService TokenServiceInterface
 }
 
 func NewTrainingService(
+	resultsRepository ResultsRepositoryInterface,
+	classService ClassServiceInterface,
 	tokenizer TokenizerInterface,
-	tokenService service.TokenServiceInterface,
-	classService service.ClassServiceInterface,
+	tokenService TokenServiceInterface,
 ) *TrainingService {
 	return &TrainingService{
+		resultsRepository: resultsRepository,
+		classService: classService,
 		tokenizer:    tokenizer,
 		tokenService: tokenService,
-		classService: classService,
 	}
 }
 
-func (service TrainingService) Train(brainID int64, samples []Sample, cb func()) (result.TrainingResult, error) {
-	resultsCollector := result.NewTrainingResult()
+func (service TrainingService) Train(brainID int64, samples []Sample, cb func()) error {
+	trainingResult := NewTrainingResult()
 	for _, sample := range samples {
 		for _, label := range sample.Classes {
 			class, err := service.classService.FindOrCreate(brainID, label)
 			if err != nil {
-				return *resultsCollector, err
+				return err
 			}
-			resultsCollector.IncClassCount(class.GetID())
+			trainingResult.IncClassCount(class.GetID())
 
 			texts := service.tokenizer.Tokenize(sample.Sentence)
 			for _, text := range texts {
 				token, err := service.tokenService.FindOrCreate(brainID, text)
 				if err != nil {
-					return *resultsCollector, err
+					return err
 				}
-				resultsCollector.IncTokenCount(class.GetID(), token.GetID())
+				trainingResult.IncTokenCount(class.GetID(), token.GetID())
 			}
 
-			resultsCollector.IncSamplesCount()
+			trainingResult.IncSamplesCount()
 		}
 		cb()
 	}
 
-	return *resultsCollector, nil
+	if err := service.saveTrainingResult(*trainingResult); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// This method saves the collected frequencies into the database
+func (service TrainingService) saveTrainingResult(trainingResult TrainingResult) error {
+	return service.resultsRepository.SaveResult(trainingResult)
 }

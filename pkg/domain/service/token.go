@@ -10,10 +10,6 @@ type TokenService struct {
 	tokenRepository TokenRepositoryInterface
 }
 
-type TokenServiceInterface interface {
-	FindOrCreate (brainID int64, text string) (TokenInterface, error)
-}
-
 func NewTokenService(tokenRepository TokenRepositoryInterface) *TokenService {
 	return &TokenService{
 		tokenRepository: tokenRepository,

@@ -15,13 +15,13 @@ type ClassFrequency map[int64]int64
 type TokenFrequency map[int64]map[int64]int64
 
 type TrainingResult struct {
-	SamplesSeen    int64 // The total number of samples seen in dataset
+	SamplesCount   int64 // The total number of samples seen in dataset
 	ClassFrequency ClassFrequency
 	TokenFrequency TokenFrequency
 }
 
 func (t *TrainingResult) IncSamplesCount() {
-	t.SamplesSeen++
+	t.SamplesCount++
 }
 
 func (t *TrainingResult) IncClassCount(classID int64) {
@@ -37,7 +37,7 @@ func (t *TrainingResult) IncTokenCount(classID, tokenID int64) {
 
 func NewTrainingResult () *TrainingResult {
 	return &TrainingResult {
-		SamplesSeen:    0,
+		SamplesCount:   0,
 		ClassFrequency: map[int64]int64{},
 		TokenFrequency: map[int64]map[int64]int64{},
 	}
