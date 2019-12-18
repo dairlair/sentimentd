@@ -59,7 +59,6 @@ func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 		if err != nil {
 			runner.Err(err)
 		}
-		// runner.Out(fmt.Sprintf("Line: %v", strings.Join(columns, ";s")))
 		sample := Sample{
 			Sentence: columns[1],
 			Classes: strings.Split(columns[0], ","),
