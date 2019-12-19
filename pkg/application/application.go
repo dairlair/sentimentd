@@ -46,7 +46,13 @@ func (app *App) Init() {
 	defaultTokenizer := tokenizer.NewTokenizer()
 	tokenService := NewTokenService(tokenRepository)
 	classService := NewClassService(app.classRepository)
-	app.trainingService = training.NewTrainingService(&defaultTokenizer, tokenService, classService)
+	resultsRepository := repository.NewResultsRepository(app.db)
+	app.trainingService = training.NewTrainingService(
+		resultsRepository,
+		&defaultTokenizer,
+		tokenService,
+		classService,
+	)
 }
 
 func (app *App) Destroy() {

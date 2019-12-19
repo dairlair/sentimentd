@@ -46,15 +46,15 @@ func isMeaninglessWord(w string) bool {
 	return ok
 }
 
-// Cleanup remove non-alphanumeric characters and transform all words to lowercase.
-func Cleanup(sentence string) string {
+// Cleanup remove none-alphanumeric characters and convert them to lowercase
+func cleanup(sentence string) string {
 	re := regexp.MustCompile("[^a-zA-Z 0-9]+")
 	return re.ReplaceAllString(strings.ToLower(sentence), "")
 }
 
 // Tokenize create an array of words from a sentence
 func tokenize(sentence string) []string {
-	s := Cleanup(sentence)
+	s := cleanup(sentence)
 	words := strings.Fields(s)
 	var tokens []string
 	for _, w := range words {

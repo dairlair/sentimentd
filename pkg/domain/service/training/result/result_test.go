@@ -12,7 +12,7 @@ func TestTrainingResult_IncSamplesCount(t *testing.T) {
 		for i := int64(0); i < count ; i++ {
 			result.IncSamplesCount()
 		}
-		assert.Equal(t, count, result.SamplesSeen, "The samples counter must works properly")
+		assert.Equal(t, count, result.SamplesCount, "The samples counter must works properly")
 	}
 }
 
