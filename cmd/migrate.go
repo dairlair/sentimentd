@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -12,26 +12,44 @@ import (
 
 func init() {
 	rootCmd.AddCommand(migrateCmd)
+	migrateCmd.AddCommand(migrateUpCmd)
+	migrateCmd.AddCommand(migrateDownCmd)
 }
 
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",
+	Short: "Manage migrations",
+	Long:  `Allows to apply or rollback migrations`,
+}
+
+var migrateUpCmd = &cobra.Command{
+	Use:   "up",
 	Short: "Apply migrations to the database",
 	Long:  `Apply the database migrations from ./schema/postgres directory`,
 	Run: func(cmd *cobra.Command, args []string) {
-		apply()
+		execute(func (m *migrate.Migrate) error {
+			return m.Up()
+		})
 	},
 }
 
-func apply() {
+var migrateDownCmd = &cobra.Command{
+	Use:   "down",
+	Short: "Rollback migrations in the database",
+	Run: func(cmd *cobra.Command, args []string) {
+		execute(func (m *migrate.Migrate) error {
+			return m.Down()
+		})
+	},
+}
+
+func execute(f func (*migrate.Migrate) error) {
 	url := viper.GetString("database.url")
-	log.Infof("Rollup migrations...\n")
-	log.Infof("Database URL: %s", url)
 	m, err := migrate.New("file://schema/postgres", url)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := m.Up(); err != nil {
+	if err := f(m); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -13,7 +13,7 @@ type TokenizerInterface interface {
 }
 
 type ResultsRepositoryInterface interface {
-	SaveResult(result TrainingResult) error
+	SaveResult(brainID int64, result TrainingResult) error
 }
 
 type ClassServiceInterface interface {
@@ -69,7 +69,7 @@ func (service TrainingService) Train(brainID int64, samples []Sample, cb func())
 		cb()
 	}
 
-	if err := service.saveTrainingResult(*trainingResult); err != nil {
+	if err := service.saveTrainingResult(brainID, *trainingResult); err != nil {
 		return err
 	}
 
@@ -77,6 +77,6 @@ func (service TrainingService) Train(brainID int64, samples []Sample, cb func())
 }
 
 // This method saves the collected frequencies into the database
-func (service TrainingService) saveTrainingResult(trainingResult TrainingResult) error {
-	return service.resultsRepository.SaveResult(trainingResult)
+func (service TrainingService) saveTrainingResult(brainID int64, trainingResult TrainingResult) error {
+	return service.resultsRepository.SaveResult(brainID, trainingResult)
 }

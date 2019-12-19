@@ -46,7 +46,7 @@ func (app *App) Init() {
 	defaultTokenizer := tokenizer.NewTokenizer()
 	tokenService := NewTokenService(tokenRepository)
 	classService := NewClassService(app.classRepository)
-	resultsRepository := repository.NewResultsRepository(app.db)
+	resultsRepository := repository.NewResultRepository(app.db)
 	app.trainingService = training.NewTrainingService(
 		classService,
 		resultsRepository,

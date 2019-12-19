@@ -2,6 +2,8 @@
 
 High-performance sentiment analyze service
 
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=dairlair_sentimentd)](https://sonarcloud.io/dashboard?id=dairlair_sentimentd)
+
 ## Features
 
 * Multi-label classification 
