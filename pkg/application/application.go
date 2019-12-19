@@ -48,10 +48,10 @@ func (app *App) Init() {
 	classService := NewClassService(app.classRepository)
 	resultsRepository := repository.NewResultsRepository(app.db)
 	app.trainingService = training.NewTrainingService(
+		classService,
 		resultsRepository,
 		&defaultTokenizer,
 		tokenService,
-		classService,
 	)
 }
 

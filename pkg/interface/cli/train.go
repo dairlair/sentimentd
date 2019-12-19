@@ -66,7 +66,7 @@ func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 		samples = append(samples, sample)
 	}
 	bar := pb.StartNew(len(samples))
-	result, err := runner.app.Train(brainID, samples, func () {
+	err := runner.app.Train(brainID, samples, func () {
 		bar.Increment()
 	})
 	bar.Finish()
@@ -74,5 +74,4 @@ func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 		log.Fatalf("training error: %s\n", err)
 	}
 	runner.Out("the training is finished")
-	runner.Out(fmt.Sprintf("result: %v", result))
 }

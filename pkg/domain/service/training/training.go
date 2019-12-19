@@ -25,21 +25,21 @@ type TokenServiceInterface interface {
 }
 
 type TrainingService struct {
-	resultsRepository ResultsRepositoryInterface
 	classService ClassServiceInterface
+	resultsRepository ResultsRepositoryInterface
 	tokenizer    TokenizerInterface
 	tokenService TokenServiceInterface
 }
 
 func NewTrainingService(
-	resultsRepository ResultsRepositoryInterface,
 	classService ClassServiceInterface,
+	resultsRepository ResultsRepositoryInterface,
 	tokenizer TokenizerInterface,
 	tokenService TokenServiceInterface,
 ) *TrainingService {
 	return &TrainingService{
-		resultsRepository: resultsRepository,
 		classService: classService,
+		resultsRepository: resultsRepository,
 		tokenizer:    tokenizer,
 		tokenService: tokenService,
 	}
