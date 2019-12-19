@@ -1,4 +1,5 @@
 // Here you can find helpers which are provide ability to print domain entities to any file.
+// @TODO Move this helpers to /pkg/interface/cli
 package helpers
 
 import (

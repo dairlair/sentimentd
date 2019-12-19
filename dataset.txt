@@ -1,0 +1,3 @@
+sentence1 class1 class2 class3
+sentence2 class2 class5 class1
+sentence3 class3 class5 class7
