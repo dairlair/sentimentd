@@ -21,26 +21,36 @@ func NewResultRepository(db *gorm.DB) resultRepository {
 
 // These function carefully save the training results
 func (repo resultRepository) SaveResult(brainID int64, result result.TrainingResult) error {
-	// @TODO Wrap to transaction this code, add defer rollback and commit
+
+	tx := repo.db.Begin()
+
 	training := model.Training{
 		BrainID:      brainID,
 		Comment:      "-",
 		SamplesCount: result.SamplesCount,
 	}
 
-	if err := repo.repository.db.Create(&training).Error; err != nil {
+	if err := tx.Create(&training).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 
 	// Save the classes frequencies
-	if err := repo.saveTrainingClasses(training, result); err != nil {
+	if err := saveTrainingClasses(tx, training, result); err != nil {
+		tx.Rollback()
 		return nil
 	}
 
-	return nil
+	// Save the tokens frequencies
+	if err := saveTrainingTokens(tx, training, result); err != nil {
+		tx.Rollback()
+		return nil
+	}
+
+	return tx.Commit().Error
 }
 
-func (repo resultRepository) saveTrainingClasses(training model.Training, result result.TrainingResult) error {
+func saveTrainingClasses(db *gorm.DB, training model.Training, result result.TrainingResult) error {
 	for classID, samplesCount := range result.ClassFrequency {
 		trainingClass := model.TrainingClass{
 			BrainID:      training.BrainID,
@@ -48,8 +58,27 @@ func (repo resultRepository) saveTrainingClasses(training model.Training, result
 			ClassID:      classID,
 			SamplesCount: samplesCount,
 		}
-		if err := repo.db.Create(&trainingClass).Error; err != nil {
+		if err := db.Create(&trainingClass).Error; err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func saveTrainingTokens(db *gorm.DB, training model.Training, result result.TrainingResult) error {
+	for classID, tokensFrequencies := range result.TokenFrequency {
+		for tokenID, samplesCount := range tokensFrequencies {
+			trainingClass := model.TrainingToken{
+				BrainID:      training.BrainID,
+				TrainingID:   training.Model.ID,
+				ClassID:      classID,
+				TokenID:      tokenID,
+				SamplesCount: samplesCount,
+			}
+			if err := db.Create(&trainingClass).Error; err != nil {
+				return err
+			}
 		}
 	}
 
