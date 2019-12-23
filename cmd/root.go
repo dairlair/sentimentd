@@ -31,6 +31,7 @@ func init() {
 		},
 	}
 	app = application.NewApp(config)
+	app.Init()
 
 	cmdFactory := cli.NewCommandsRunner(app, os.Stdin, os.Stdout, os.Stderr)
 	rootCmd.AddCommand(cmdFactory.NewCmdBrain())

@@ -30,7 +30,6 @@ func NewApp(config Config) *App {
 	app := &App{
 		config: &config,
 	}
-	app.Init()
 	return app
 }
 
