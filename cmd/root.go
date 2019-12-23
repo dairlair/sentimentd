@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/dairlair/sentimentd/pkg/application"
-	"github.com/dairlair/sentimentd/pkg/infrastructure/helpers"
 	"github.com/dairlair/sentimentd/pkg/interface/cli"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -18,7 +17,6 @@ var (
 		Long:  `long`,
 	}
 	app *application.App
-	console helpers.Console
 )
 
 func init() {
@@ -33,9 +31,9 @@ func init() {
 		},
 	}
 	app = application.NewApp(config)
-	console = helpers.NewConsole(os.Stdout)
 
 	cmdFactory := cli.NewCommandsRunner(app, os.Stdin, os.Stdout, os.Stderr)
+	rootCmd.AddCommand(cmdFactory.NewCmdBrain())
 	rootCmd.AddCommand(cmdFactory.NewCmdTrain())
 }
 
