@@ -1,4 +1,4 @@
-# sentimentd
+# Sentiment Analysis Daemon (sentimentd)
 
 High-performance sentiment analyze service
 

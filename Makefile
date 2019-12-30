@@ -11,3 +11,8 @@ test: build
 migrate: build
 	@echo "  >  Migrate..."
 	build/sentimentd migrate
+
+.PHONY: mocks
+mocks:
+	@echo " > Generate mocks..."
+	mockery -all -keeptree -dir pkg -output ./pkg/mocks
