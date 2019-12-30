@@ -13,18 +13,27 @@ package cli
 
 import (
 	"fmt"
-	"github.com/dairlair/sentimentd/pkg/application"
+	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"io"
 )
 
 type CommandsRunner struct {
-	app *application.App
+	app AppInterface
 	in io.Reader
 	out io.Writer
 	err io.Writer
 }
 
-func NewCommandsRunner(app *application.App, in io.Reader, out, err io.Writer) *CommandsRunner {
+type AppInterface interface {
+	BrainList () ([]entity.BrainInterface, error)
+	GetBrainByID (id int64) (entity.BrainInterface, error)
+	CreateBrain (name string, description string) (entity.BrainInterface, error)
+	DeleteBrain (id int64) error
+
+	Train (brainID int64, samples []entity.Sample, cb func ()) error
+}
+
+func NewCommandsRunner(app AppInterface, in io.Reader, out, err io.Writer) *CommandsRunner {
 	return &CommandsRunner{
 		app: app,
 		in:  in,
