@@ -46,6 +46,15 @@ func (repo *BrainRepository) GetByID(id int64) (BrainInterface, error) {
 	return &brain, nil
 }
 
+func (repo *BrainRepository) GetByName(name string) (BrainInterface, error) {
+	var brain Brain
+	if err := repo.repository.db.First(&brain, Brain{Name:name}).Error; err != nil {
+		return nil, err
+	}
+
+	return &brain, nil
+}
+
 func (repo *BrainRepository) Create(name string, description string) (BrainInterface, error) {
 	brain := Brain{Name: name, Description: description}
 	if err := repo.repository.db.Create(&brain).Error; err != nil {

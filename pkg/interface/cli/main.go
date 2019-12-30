@@ -27,6 +27,7 @@ type CommandsRunner struct {
 type AppInterface interface {
 	BrainList () ([]entity.BrainInterface, error)
 	GetBrainByID (id int64) (entity.BrainInterface, error)
+	GetBrainByName (name string) (entity.BrainInterface, error)
 	CreateBrain (name string, description string) (entity.BrainInterface, error)
 	DeleteBrain (id int64) error
 

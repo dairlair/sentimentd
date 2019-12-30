@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"github.com/dairlair/sentimentd/cmd/utils"
 	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/dairlair/sentimentd/pkg/interface/cli/util"
 	"github.com/spf13/cobra"
@@ -67,8 +66,8 @@ func newCmdBrainInspect(runner *CommandsRunner) *cobra.Command {
 		Short: "Display detailed information on one or more brains",
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			utils.IterateArgs(args, func(id int64) {
-				brain, err := runner.app.GetBrainByID(id)
+			util.IterateArgs(args, func(reference string) {
+				brain, err := runner.app.GetBrainByName(reference)
 				if err != nil {
 					runner.Err(err)
 
@@ -86,7 +85,7 @@ func newCmdBrainDelete(runner *CommandsRunner) *cobra.Command {
 		Short: "Remove one or more brains",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			utils.IterateArgs(args, func(id int64) {
+			util.IterateArgs(args, func(id string) {
 				err := runner.app.DeleteBrain(id)
 				if err != nil {
 					runner.Err(err)
