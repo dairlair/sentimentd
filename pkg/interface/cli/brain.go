@@ -67,7 +67,7 @@ func newCmdBrainInspect(runner *CommandsRunner) *cobra.Command {
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			util.IterateArgs(args, func(reference string) {
-				brain, err := runner.app.GetBrainByName(reference)
+				brain, err := runner.app.GetBrainByReference(reference)
 				if err != nil {
 					runner.Err(err)
 
@@ -85,14 +85,21 @@ func newCmdBrainDelete(runner *CommandsRunner) *cobra.Command {
 		Short: "Remove one or more brains",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			util.IterateArgs(args, func(id string) {
-				err := runner.app.DeleteBrain(id)
+			util.IterateArgs(args, func(reference string) {
+				brain, err := runner.app.GetBrainByReference(reference)
 				if err != nil {
 					runner.Err(err)
 
 					return
 				}
-				runner.Out(fmt.Sprintf("Deleted: %d\n", id))
+
+				err = runner.app.DeleteBrain(brain.GetID())
+				if err != nil {
+					runner.Err(err)
+
+					return
+				}
+				runner.Out(fmt.Sprintf("Deleted: %d\n", brain.GetID()))
 			})
 		},
 	}

@@ -7,6 +7,7 @@ import (
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"
 	. "github.com/dairlair/sentimentd/pkg/infrastructure/model"
 	"github.com/jinzhu/gorm"
+	"strconv"
 )
 
 type BrainRepository struct {
@@ -37,7 +38,19 @@ func (repo *BrainRepository) GetAll() ([]BrainInterface, error) {
 	return brainsInterfaces, nil
 }
 
-func (repo *BrainRepository) GetByID(id int64) (BrainInterface, error) {
+func (repo *BrainRepository) GetByReference(reference string) (BrainInterface, error) {
+	// Firstly try use reference as an ID
+	id, err := strconv.ParseInt(reference, 10, 64)
+	if err == nil {
+		if brain, err := repo.getByID(id); err == nil {
+			return brain, nil
+		}
+	}
+	// Finally use reference as a name
+	return repo.getByName(reference)
+}
+
+func (repo *BrainRepository) getByID(id int64) (BrainInterface, error) {
 	var brain Brain
 	if err := repo.repository.db.First(&brain, id).Error; err != nil {
 		return nil, err
@@ -46,7 +59,7 @@ func (repo *BrainRepository) GetByID(id int64) (BrainInterface, error) {
 	return &brain, nil
 }
 
-func (repo *BrainRepository) GetByName(name string) (BrainInterface, error) {
+func (repo *BrainRepository) getByName(name string) (BrainInterface, error) {
 	var brain Brain
 	if err := repo.repository.db.First(&brain, Brain{Name:name}).Error; err != nil {
 		return nil, err
