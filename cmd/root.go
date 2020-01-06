@@ -34,6 +34,7 @@ func init() {
 	app.Init()
 
 	cmdFactory := cli.NewCommandsRunner(app, os.Stdin, os.Stdout, os.Stderr)
+	rootCmd.AddCommand(cmdFactory.NewCmdAnalyze())
 	rootCmd.AddCommand(cmdFactory.NewCmdBrain())
 	rootCmd.AddCommand(cmdFactory.NewCmdTrain())
 }

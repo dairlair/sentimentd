@@ -3,24 +3,22 @@ package cli
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/cheggaaa/pb/v3"
 	. "github.com/dairlair/sentimentd/pkg/domain/entity"
-	"github.com/dairlair/sentimentd/pkg/interface/cli/util"
 	"github.com/spf13/cobra"
 	"io"
 	"log"
 	"os"
 	"strings"
-	pb "github.com/cheggaaa/pb/v3"
 )
 
 func (runner *CommandsRunner) NewCmdTrain() *cobra.Command {
 	return &cobra.Command{
 		Use:   "train",
 		Short: "Train a specified brain",
-		Long: `train provides ability to train brain with categorized sentences.
-Find more information at: https://google.com`,
+		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			brainID, err := util.ParseInt64(args[0])
+			brain, err := runner.app.GetBrainByReference(args[0])
 			if err != nil {
 				runner.Err(err)
 
@@ -28,10 +26,10 @@ Find more information at: https://google.com`,
 			}
 
 			if len(args) == 1 {
-				trainFromStream(runner, brainID, runner.in)
+				trainFromStream(runner, brain.GetID(), runner.in)
 			} else {
 				for _, filename := range args[1:] {
-					trainFromFile(runner, brainID, filename)
+					trainFromFile(runner, brain.GetID(), filename)
 				}
 			}
 		},
@@ -71,7 +69,7 @@ func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 	})
 	bar.Finish()
 	if err != nil {
-		log.Fatalf("training error: %s\n", err)
+		runner.Err(err)
 	}
 	runner.Out("the training is finished")
 }
