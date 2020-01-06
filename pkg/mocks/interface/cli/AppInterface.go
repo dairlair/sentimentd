@@ -72,13 +72,13 @@ func (_m *AppInterface) DeleteBrain(id int64) error {
 	return r0
 }
 
-// GetBrainByID provides a mock function with given fields: id
-func (_m *AppInterface) GetBrainByID(id int64) (entity.BrainInterface, error) {
-	ret := _m.Called(id)
+// GetBrainByReference provides a mock function with given fields: reference
+func (_m *AppInterface) GetBrainByReference(reference string) (entity.BrainInterface, error) {
+	ret := _m.Called(reference)
 
 	var r0 entity.BrainInterface
-	if rf, ok := ret.Get(0).(func(int64) entity.BrainInterface); ok {
-		r0 = rf(id)
+	if rf, ok := ret.Get(0).(func(string) entity.BrainInterface); ok {
+		r0 = rf(reference)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(entity.BrainInterface)
@@ -86,8 +86,8 @@ func (_m *AppInterface) GetBrainByID(id int64) (entity.BrainInterface, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int64) error); ok {
-		r1 = rf(id)
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(reference)
 	} else {
 		r1 = ret.Error(1)
 	}
