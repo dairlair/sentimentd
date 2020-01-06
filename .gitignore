@@ -19,3 +19,4 @@ vendor/
 
 # Config file
 sentimentd.yml
+.vscode/launch.json
