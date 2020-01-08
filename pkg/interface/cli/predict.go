@@ -5,12 +5,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func (runner *CommandsRunner) NewCmdAnalyze() *cobra.Command {
+func (runner *CommandsRunner) NewCmdPredict() *cobra.Command {
 	return &cobra.Command{
-		Use:   "analyze",
-		Short: "Analyze specified text using certain brain",
+		Use:   "predict",
+		Short: "Predict specified text using certain brain",
 		Args:  cobra.MinimumNArgs(2),
-		Aliases: []string{"anal", "score"},
+		Aliases: []string{"analyze", "analyse", "anal"},
 		Run: func(cmd *cobra.Command, args []string) {
 			brain, err := runner.app.GetBrainByReference(args[0])
 			if err != nil {
@@ -21,13 +21,13 @@ func (runner *CommandsRunner) NewCmdAnalyze() *cobra.Command {
 
 			text := args[1]
 
-			analyzeText(runner, brain.GetID(), text)
+			predictForText(runner, brain.GetID(), text)
 		},
 	}
 }
 
-func analyzeText(runner *CommandsRunner, brainID int64, text string) {
-	score, err := runner.app.Analyze(brainID, text)
+func predictForText(runner *CommandsRunner, brainID int64, text string) {
+	score, err := runner.app.Predict(brainID, text)
 	if err != nil {
 		runner.Err(err)
 

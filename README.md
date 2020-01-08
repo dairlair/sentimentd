@@ -23,8 +23,14 @@ Firstly you need to create the brain (classifier) for the training.
 ./build/sentimentd brain create skynet "The artificial neural network-based conscious group mind"
 ```
 
+Train it with some dataset
 ```shell script
-./build/sentimentd train
+./build/sentimentd train skynet dataset.txt
+```
+
+And use it for sentiment analysis
+```shell script
+./build/sentimentd analyse skynet "Hello world!"
 ```
 
 ### Apply migrations
@@ -35,7 +41,7 @@ Firstly you need to create the brain (classifier) for the training.
 
 # Credits
 
-Many thanks to [kaggle](kaggle.com) for datasets.
+Many thanks to [kaggle](kaggle.com) for the datasets.
 
 See [Sentiment Analysis: Emotion in Text](https://www.kaggle.com/c/sa-emotions/data).
 

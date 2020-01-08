@@ -32,7 +32,7 @@ type AppInterface interface {
 
 	Train (brainID int64, samples []entity.Sample, cb func ()) error
 
-	Analyze(brainID int64, text string) (score map[string]float64, err error)
+	Predict(brainID int64, text string) (prediction entity.Prediction, err error)
 }
 
 func NewCommandsRunner(app AppInterface, in io.Reader, out, err io.Writer) *CommandsRunner {
