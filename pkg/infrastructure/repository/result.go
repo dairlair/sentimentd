@@ -84,3 +84,19 @@ func saveTrainingTokens(db *gorm.DB, training model.Training, result result.Trai
 
 	return nil
 }
+
+func (repo resultRepository) GetTrainingResults(brainID int64) (r result.TrainingResult, err error) {
+	r.SamplesCount, err = getBrainSamplesCount(repo.db, brainID)
+	return r, nil
+}
+
+func getBrainSamplesCount(db *gorm.DB, brainID int64) (int64, error) {
+	var count int64
+	row := db.Raw("SELECT SUM(samples_count) FROM trainings WHERE deleted_at IS NULL and brain_id = ?", brainID)
+	row.Scan(&count)
+	if err := db.Error; err != nil {
+		return 0, err
+	}
+
+	return count, err
+}
