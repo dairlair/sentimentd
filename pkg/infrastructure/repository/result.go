@@ -98,5 +98,5 @@ func getBrainSamplesCount(db *gorm.DB, brainID int64) (int64, error) {
 		return 0, err
 	}
 
-	return count, err
+	return count, nil
 }
