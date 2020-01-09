@@ -3,6 +3,7 @@ package application
 import (
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"
 	. "github.com/dairlair/sentimentd/pkg/domain/service"
+	"github.com/dairlair/sentimentd/pkg/domain/service/predictor"
 	"github.com/dairlair/sentimentd/pkg/domain/service/tokenizer"
 	"github.com/dairlair/sentimentd/pkg/domain/service/training"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/db"
@@ -24,6 +25,7 @@ type App struct {
 	brainRepository BrainRepositoryInterface
 	classRepository ClassRepositoryInterface
 	trainingService *training.TrainingService
+	predictor       *predictor.Predictor
 }
 
 func NewApp(config Config) *App {
@@ -52,6 +54,7 @@ func (app *App) Init() {
 		&defaultTokenizer,
 		tokenService,
 	)
+	app.predictor = predictor.NewPredictor(&defaultTokenizer)
 }
 
 func (app *App) Destroy() {

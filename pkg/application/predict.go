@@ -5,5 +5,5 @@ import (
 )
 
 func (app *App) Predict(brainID int64, text string) (prediction entity.Prediction, err error) {
-	return entity.NewPrediction(map[int64]float64{}), err
+	return app.predictor.Predict(brainID, text)
 }

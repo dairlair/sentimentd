@@ -12,29 +12,6 @@ type AppInterface struct {
 	mock.Mock
 }
 
-// Predict provides a mock function with given fields: brainID, text
-func (_m *AppInterface) Predict(brainID int64, text string) (map[string]float64, error) {
-	ret := _m.Called(brainID, text)
-
-	var r0 map[string]float64
-	if rf, ok := ret.Get(0).(func(int64, string) map[string]float64); ok {
-		r0 = rf(brainID, text)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[string]float64)
-		}
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(int64, string) error); ok {
-		r1 = rf(brainID, text)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // BrainList provides a mock function with given fields:
 func (_m *AppInterface) BrainList() ([]entity.BrainInterface, error) {
 	ret := _m.Called()
@@ -111,6 +88,27 @@ func (_m *AppInterface) GetBrainByReference(reference string) (entity.BrainInter
 	var r1 error
 	if rf, ok := ret.Get(1).(func(string) error); ok {
 		r1 = rf(reference)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Predict provides a mock function with given fields: brainID, text
+func (_m *AppInterface) Predict(brainID int64, text string) (entity.Prediction, error) {
+	ret := _m.Called(brainID, text)
+
+	var r0 entity.Prediction
+	if rf, ok := ret.Get(0).(func(int64, string) entity.Prediction); ok {
+		r0 = rf(brainID, text)
+	} else {
+		r0 = ret.Get(0).(entity.Prediction)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64, string) error); ok {
+		r1 = rf(brainID, text)
 	} else {
 		r1 = ret.Error(1)
 	}
