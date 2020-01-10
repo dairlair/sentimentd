@@ -25,10 +25,26 @@ func (c *NaiveBayesClassifier) Classify () entity.Prediction {
 		probabilities[classID] = calculateClassProbability(c.trainingResult, classID)
 	}
 
+	// Create an probability space
+	probabilities = createProbabilitySpace(probabilities)
+
 	prediction := entity.NewPrediction(probabilities)
 	return prediction
 }
 
 func calculateClassProbability(trainingResult result.TrainingResult, classID int64) float64 {
-	return math.Log(float64(trainingResult.ClassFrequency[classID] / trainingResult.SamplesCount))
+	return math.Log(float64(trainingResult.ClassFrequency[classID]) / float64(trainingResult.SamplesCount))
+}
+
+func createProbabilitySpace(probabilities map[int64]float64) map[int64]float64 {
+	var denominator float64 = 0
+	for _, probability := range probabilities {
+		denominator += math.Exp(probability)
+	}
+
+	for classID, probability := range probabilities {
+		probabilities[classID] = math.Exp(probability) / denominator
+	}
+
+	return probabilities
 }

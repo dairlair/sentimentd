@@ -85,24 +85,56 @@ func saveTrainingTokens(db *gorm.DB, training model.Training, result result.Trai
 	return nil
 }
 
-func (repo resultRepository) GetTrainingResults(brainID int64) (result.TrainingResult, error) {
-	samplesCount, err := getBrainSamplesCount(repo.db, brainID)
+func (repo resultRepository) GetTrainingResults(brainID int64) (r result.TrainingResult, err error) {
+	r.SamplesCount, err = getBrainSamplesCount(repo.db, brainID)
 	if err != nil {
-		return result.TrainingResult{}, err
+		return r, err
 	}
-	return result.TrainingResult{
-		SamplesCount:   samplesCount,
-		ClassFrequency: nil,
-		TokenFrequency: nil,
-	}, nil
+	r.ClassFrequency, err = getClassFrequency(repo.db, brainID)
+	if err != nil {
+		return r, err
+	}
+	return r, nil
 }
 
 func getBrainSamplesCount(db *gorm.DB, brainID int64) (int64, error) {
-	r := result.TrainingResult{}
+	r := struct{ SamplesCount int64 }{}
 	sql := "SELECT SUM(samples_count) AS samples_count FROM trainings WHERE deleted_at IS NULL and brain_id = ?"
 	if err := db.Raw(sql, brainID).Scan(&r).Error; err != nil {
 		return 0, err
 	}
 
 	return r.SamplesCount, nil
+}
+
+func getClassFrequency(db *gorm.DB, brainID int64) (r result.ClassFrequency, err error) {
+	r = make(map[int64]int64)
+
+	rows, err := db.
+		Table("training_classes").
+		Select("class_id, SUM(samples_count) AS samples_count").
+		Where("deleted_at IS NULL and brain_id = ?", brainID).
+		Group("class_id").
+		Rows()
+
+
+	if err != nil {
+		return r, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		classFrequency := struct {
+			ClassID      int64
+			SamplesCount int64
+		}{}
+		err = db.ScanRows(rows, &classFrequency)
+		if err != nil {
+			return r, err
+		}
+		r[classFrequency.ClassID] = classFrequency.SamplesCount
+	}
+
+	return r, nil
 }
