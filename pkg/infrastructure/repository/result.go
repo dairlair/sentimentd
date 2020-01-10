@@ -2,6 +2,8 @@
 package repository
 
 import (
+	"github.com/dairlair/sentimentd/pkg/domain/entity"
+	"github.com/dairlair/sentimentd/pkg/domain/service/classifier"
 	"github.com/dairlair/sentimentd/pkg/domain/service/training/result"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/model"
 	"github.com/jinzhu/gorm"
@@ -85,19 +87,21 @@ func saveTrainingTokens(db *gorm.DB, training model.Training, result result.Trai
 	return nil
 }
 
-func (repo resultRepository) GetTrainingResults(brainID int64) (r result.TrainingResult, err error) {
-	r.SamplesCount, err = getBrainSamplesCount(repo.db, brainID)
-	if err != nil {
-		return r, err
+func (repo resultRepository) GetTrainedModel(brainID int64) (trainedModel classifier.TrainedModelInterface, err error) {
+	m := entity.TrainedModel{}
+	if m.SamplesCount, err = getSamplesCount(repo.db, brainID); err != nil {
+		return nil, err
 	}
-	r.ClassFrequency, err = getClassFrequency(repo.db, brainID)
-	if err != nil {
-		return r, err
+	if m.UniqueTokensCount, err = getUniqueTokensCount(repo.db, brainID); err != nil {
+		return nil, err
 	}
-	return r, nil
+	if m.ClassFrequency, err = getClassFrequency(repo.db, brainID); err != nil {
+		return nil, err
+	}
+	return &m, nil
 }
 
-func getBrainSamplesCount(db *gorm.DB, brainID int64) (int64, error) {
+func getSamplesCount(db *gorm.DB, brainID int64) (int64, error) {
 	r := struct{ SamplesCount int64 }{}
 	sql := "SELECT SUM(samples_count) AS samples_count FROM trainings WHERE deleted_at IS NULL and brain_id = ?"
 	if err := db.Raw(sql, brainID).Scan(&r).Error; err != nil {
@@ -137,4 +141,20 @@ func getClassFrequency(db *gorm.DB, brainID int64) (r result.ClassFrequency, err
 	}
 
 	return r, nil
+}
+
+func getUniqueTokensCount(db *gorm.DB, brainID int64) (int64, error) {
+	r := struct{ UniqueTokensCount int64 }{}
+
+	sql := `
+		SELECT count(*) as unique_tokens_count FROM (
+			SELECT DISTINCT token_id FROM training_tokens WHERE brain_id = ? AND deleted_at IS NULL
+		) AS t 
+	`
+
+	if err := db.Raw(sql, brainID).Scan(&r).Error; err != nil {
+		return 0, err
+	}
+
+	return r.UniqueTokensCount, nil
 }

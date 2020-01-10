@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/dairlair/sentimentd/pkg/domain/service/classifier"
-	"github.com/dairlair/sentimentd/pkg/domain/service/training/result"
 	"strings"
 )
 
@@ -17,7 +16,7 @@ type TokenRepositoryInterface interface {
 }
 
 type ResultsRepositoryInterface interface {
-	GetTrainingResults(brainID int64) (result.TrainingResult, error)
+	GetTrainedModel(brainID int64) (classifier.TrainedModelInterface, error)
 }
 
 type Predictor struct {
@@ -40,7 +39,7 @@ func (p *Predictor) Predict (brainID int64, text string) (prediction entity.Pred
 	fmt.Printf("Found tokens: %s\n", strings.Join(tokens, ", "))
 
 	// Retrieve summarized training data for specified brain
-	trainingResult, err := p.resultsRepository.GetTrainingResults(brainID)
+	trainingResult, err := p.resultsRepository.GetTrainedModel(brainID)
 	if err != nil {
 		return prediction, err
 	}
