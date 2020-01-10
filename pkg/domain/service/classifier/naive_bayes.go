@@ -9,10 +9,14 @@ import (
 type TrainedModelInterface interface {
 	// Returns the total samples count used in the model's training dataset
 	GetSamplesCount() int64
-	// Returns map with classes frequencies
+	// Returns map with classes frequencies ()
 	GetClassFrequency() result.ClassFrequency
 	// Returns count of unique tokens in the model's training dataset
 	GetUniqueTokensCount() int64
+	// Returns total tokens count in each class map[<Class ID> => <Tokens Count>]
+	GetClassSizes() entity.ClassSizeMap
+	// Returns token frequency (how much time each token was found in each class)
+	GetTokenFrequency() result.TokenFrequency
 }
 
 type NaiveBayesClassifier struct {
@@ -25,9 +29,6 @@ func NewNaiveBayesClassifier (model TrainedModelInterface) *NaiveBayesClassifier
 	}
 }
 
-/**
- * @TODO Remove direct access to TrainingResult and use TrainingResultInterface instead
- */
 func (c *NaiveBayesClassifier) Classify () entity.Prediction {
 	probabilities := make(map[int64]float64, len(c.model.GetClassFrequency()))
 	for classID, _ := range c.model.GetClassFrequency() {

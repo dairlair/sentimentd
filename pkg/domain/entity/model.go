@@ -8,6 +8,8 @@ type TrainedModel struct {
 	SamplesCount int64
 	UniqueTokensCount int64
 	ClassFrequency result.ClassFrequency
+	ClassSize ClassSizeMap
+	TokenFrequency result.TokenFrequency
 }
 
 func (m TrainedModel) GetSamplesCount() int64 {
@@ -20,4 +22,12 @@ func (m TrainedModel) GetUniqueTokensCount() int64 {
 
 func (m TrainedModel) GetClassFrequency() result.ClassFrequency {
 	return m.ClassFrequency
+}
+
+func (m TrainedModel) GetClassSizes() ClassSizeMap {
+	return m.ClassSize
+}
+
+func (m TrainedModel) GetTokenFrequency() result.TokenFrequency {
+	return m.TokenFrequency
 }
