@@ -10,4 +10,5 @@ type ClassRepositoryInterface interface {
 	//GetByBrainIDAndLabel(brainID int64, label string) (ClassInterface, error)
 	Create(brainID int64, label string) (ClassInterface, error)
 	FindByBrainAndLabel(brainID int64, label string) (ClassInterface, error)
+	FindByID(classID int64) (ClassInterface, error)
 }

@@ -12,6 +12,11 @@ migrate: build
 	@echo "  >  Migrate..."
 	build/sentimentd migrate
 
+.PHONY: bench
+bench:
+	@echo "  >  Benchmarking..."
+	go test -bench=. ./...
+
 .PHONY: mocks
 mocks:
 	@echo " > Generate mocks..."
