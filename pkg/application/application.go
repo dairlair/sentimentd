@@ -54,7 +54,7 @@ func (app *App) Init() {
 		&defaultTokenizer,
 		tokenService,
 	)
-	app.predictor = predictor.NewPredictor(&defaultTokenizer, resultsRepository)
+	app.predictor = predictor.NewPredictor(&defaultTokenizer, tokenRepository, resultsRepository)
 }
 
 func (app *App) Destroy() {

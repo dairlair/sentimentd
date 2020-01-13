@@ -13,8 +13,9 @@ func NewPrediction(probabilities map[int64]float64) Prediction {
 // Returns identifiers list of predicted classes
 func (p *Prediction) GetClassIDs() []int64 {
 	ids := make([]int64, len(p.probabilities))
-	for id, _ := range p.probabilities {
-		ids = append(ids, id)
+	var i int64 = 0; for id, _ := range p.probabilities {
+		ids[i] = id
+		i++
 	}
 
 	return ids

@@ -98,6 +98,12 @@ func (repo resultRepository) GetTrainedModel(brainID int64) (trainedModel classi
 	if m.ClassFrequency, err = getClassFrequency(repo.db, brainID); err != nil {
 		return nil, err
 	}
+	if m.ClassSize, err = getClassSize(repo.db, brainID); err != nil {
+		return nil, err
+	}
+	if m.TokenFrequency ,err = getTokenFrequency(repo.db, brainID); err != nil {
+		return nil, err
+	}
 	return &m, nil
 }
 
@@ -157,4 +163,71 @@ func getUniqueTokensCount(db *gorm.DB, brainID int64) (int64, error) {
 	}
 
 	return r.UniqueTokensCount, nil
+}
+
+func getClassSize (db *gorm.DB, brainID int64) (entity.ClassSizeMap, error) {
+	r := entity.ClassSizeMap{}
+
+	rows, err := db.
+		Table("training_tokens").
+		Select("class_id, SUM(samples_count) AS tokens_count").
+		Where("deleted_at IS NULL and brain_id = ?", brainID).
+		Group("class_id").
+		Rows()
+
+
+	if err != nil {
+		return r, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		classSize := struct {
+			ClassID      int64
+			TokensCount int64
+		}{}
+		err = db.ScanRows(rows, &classSize)
+		if err != nil {
+			return r, err
+		}
+		r[classSize.ClassID] = classSize.TokensCount
+	}
+
+	return r, nil
+}
+
+func getTokenFrequency (db *gorm.DB, brainID int64) (result.TokenFrequency, error) {
+	r := result.TokenFrequency{}
+
+	rows, err := db.
+		Table("training_tokens").
+		Select("class_id, token_id, SUM(samples_count) AS count").
+		Where("deleted_at IS NULL and brain_id = ?", brainID).
+		Group("class_id, token_id").
+		Rows()
+
+	if err != nil {
+		return r, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		tokenFrequency := struct {
+			ClassID      int64
+			TokenID      int64
+			Count int64
+		}{}
+		err = db.ScanRows(rows, &tokenFrequency)
+		if err != nil {
+			return r, err
+		}
+		if r[tokenFrequency.ClassID] == nil {
+			r[tokenFrequency.ClassID] = make(map[int64]int64)
+		}
+		r[tokenFrequency.ClassID][tokenFrequency.TokenID] = tokenFrequency.Count
+	}
+
+	return r, nil
 }

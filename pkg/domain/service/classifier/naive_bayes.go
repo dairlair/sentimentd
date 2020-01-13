@@ -29,10 +29,11 @@ func NewNaiveBayesClassifier (model TrainedModelInterface) *NaiveBayesClassifier
 	}
 }
 
-func (c *NaiveBayesClassifier) Classify () entity.Prediction {
+// Classify certain set of Token IDs. This slice CAN contains repeating values.
+func (c *NaiveBayesClassifier) Classify (tokenIDs []int64) entity.Prediction {
 	probabilities := make(map[int64]float64, len(c.model.GetClassFrequency()))
 	for classID, _ := range c.model.GetClassFrequency() {
-		probabilities[classID] = calculateClassProbability(c.model, classID)
+		probabilities[classID] = calculateClassProbability(c.model, classID, tokenIDs)
 	}
 
 	// Create an probability space
@@ -42,8 +43,26 @@ func (c *NaiveBayesClassifier) Classify () entity.Prediction {
 	return prediction
 }
 
-func calculateClassProbability(model TrainedModelInterface, classID int64) float64 {
+func calculateClassProbability(model TrainedModelInterface, classID int64, tokenIDs []int64) float64 {
 	r := math.Log(float64(model.GetClassFrequency()[classID]) / float64(model.GetSamplesCount()))
+	// fmt.Printf("Calc:>> %d / %d\n", model.GetClassFrequency()[classID], model.GetSamplesCount())
+	tf := model.GetTokenFrequency()
+
+	for _, tokenID := range tokenIDs {
+		w, ok := tf[classID][tokenID]
+		// @TODO Rewrite it to obvious use for Laplace smothering
+		if !ok {
+			// These token is not found in training dataset
+			w = 0
+		}
+		w++
+		//
+		internalFrequency := model.GetUniqueTokensCount() + model.GetClassSizes()[classID]
+		// fmt.Printf("Calc:>> %d / %d\n", w, internalFrequency)
+		r += math.Log(float64(w) / float64(internalFrequency))
+	}
+
+	// fmt.Printf("Class score #%d: %f\n", classID, r)
 
 	return r
 }

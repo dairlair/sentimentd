@@ -48,7 +48,7 @@ func isMeaninglessWord(w string) bool {
 
 // Cleanup remove none-alphanumeric characters and convert them to lowercase
 func cleanup(sentence string) string {
-	re := regexp.MustCompile("[^a-zA-Z 0-9]+")
+	re := regexp.MustCompile("[^a-zA-Zа-яА-Я 0-9]+")
 	return re.ReplaceAllString(strings.ToLower(sentence), "")
 }
 
