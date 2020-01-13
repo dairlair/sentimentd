@@ -33,6 +33,8 @@ type AppInterface interface {
 	Train (brainID int64, samples []entity.Sample, cb func ()) error
 
 	Predict(brainID int64, text string) (prediction entity.Prediction, err error)
+
+	GetClassByID(classID int64) (entity.ClassInterface, error)
 }
 
 func NewCommandsRunner(app AppInterface, in io.Reader, out, err io.Writer) *CommandsRunner {

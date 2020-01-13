@@ -1,10 +1,8 @@
 package predictor
 
 import (
-	"fmt"
 	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/dairlair/sentimentd/pkg/domain/service/classifier"
-	"strings"
 )
 
 type TokenizerInterface interface {
@@ -38,11 +36,8 @@ func NewPredictor(
 }
 
 func (p *Predictor) Predict(brainID int64, text string) (prediction entity.Prediction, err error) {
-	fmt.Printf("Prediction with brain#%d for text '%s'\n", brainID, text)
-
 	// Divide text into the tokens
 	tokens := p.tokenizer.Tokenize(text)
-	fmt.Printf("Found tokens: %s\n", strings.Join(tokens, ", "))
 
 	// Found these tokens in the TokenRepository
 	tokenIDs, err := p.tokenRepository.GetTokenIDs(brainID, tokens)

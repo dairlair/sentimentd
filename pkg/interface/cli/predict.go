@@ -35,6 +35,10 @@ func predictForText(runner *CommandsRunner, brainID int64, text string) {
 	}
 
 	for _, classID := range score.GetClassIDs() {
-		runner.Out(fmt.Sprintf("%d: %f", classID, score.GetClassProbability(classID)))
+		class, err := runner.app.GetClassByID(classID)
+		if err != nil {
+			runner.Err(err)
+		}
+		runner.Out(fmt.Sprintf("%s: %f", class.GetLabel(), score.GetClassProbability(classID)))
 	}
 }

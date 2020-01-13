@@ -36,3 +36,12 @@ func (repo *ClassRepository) FindByBrainAndLabel(brainID int64, label string) (C
 
 	return &class, nil
 }
+
+func (repo *ClassRepository) FindByID(classID int64) (ClassInterface, error) {
+	var class Class
+	if err := repo.repository.db.Where(Class{Model: Model{ID: classID}}).First(&class).Error; err != nil {
+		return nil, err
+	}
+
+	return &class, nil
+}
