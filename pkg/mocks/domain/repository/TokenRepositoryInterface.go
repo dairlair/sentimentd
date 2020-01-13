@@ -57,3 +57,26 @@ func (_m *TokenRepositoryInterface) FindByBrainAndText(brainID int64, text strin
 
 	return r0, r1
 }
+
+// GetTokenIDs provides a mock function with given fields: brainID, tokens
+func (_m *TokenRepositoryInterface) GetTokenIDs(brainID int64, tokens []string) ([]int64, error) {
+	ret := _m.Called(brainID, tokens)
+
+	var r0 []int64
+	if rf, ok := ret.Get(0).(func(int64, []string) []int64); ok {
+		r0 = rf(brainID, tokens)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int64)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64, []string) error); ok {
+		r1 = rf(brainID, tokens)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

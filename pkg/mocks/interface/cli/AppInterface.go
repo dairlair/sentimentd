@@ -95,6 +95,29 @@ func (_m *AppInterface) GetBrainByReference(reference string) (entity.BrainInter
 	return r0, r1
 }
 
+// GetClassByID provides a mock function with given fields: classID
+func (_m *AppInterface) GetClassByID(classID int64) (entity.ClassInterface, error) {
+	ret := _m.Called(classID)
+
+	var r0 entity.ClassInterface
+	if rf, ok := ret.Get(0).(func(int64) entity.ClassInterface); ok {
+		r0 = rf(classID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(entity.ClassInterface)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64) error); ok {
+		r1 = rf(classID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Predict provides a mock function with given fields: brainID, text
 func (_m *AppInterface) Predict(brainID int64, text string) (entity.Prediction, error) {
 	ret := _m.Called(brainID, text)
