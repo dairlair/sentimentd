@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -58,6 +59,11 @@ func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 		}
 		if err != nil {
 			runner.Err(err)
+			continue
+		}
+		if len(columns) != 2 {
+			runner.Err(errors.New("wrong columns number in row: " + strings.Join(columns, ", ")))
+			continue
 		}
 		sample := entity.Sample{
 			Sentence: columns[1],
