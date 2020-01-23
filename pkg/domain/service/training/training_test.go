@@ -16,7 +16,7 @@ import (
 func BenchmarkTrainingService_Train(b *testing.B) {
 	brainId := int64(1)
 	classes := generateClasses(10)
-	samples := generateSamples(classes, 10000000)
+	samples := generateSamples(classes, 1000)
 
 	classService := mocks.ClassServiceInterface{}
 	class := &model.Class{
