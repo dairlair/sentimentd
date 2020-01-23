@@ -12,6 +12,7 @@ import (
 	"github.com/cheggaaa/pb/v3"
 	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/spf13/cobra"
+	"time"
 )
 
 // NewCmdTrain returns command for brain training
@@ -50,8 +51,22 @@ func trainFromFile(runner *CommandsRunner, brainID int64, filename string) {
 }
 
 func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
+	samples := readSamples(runner, in)
+	bar := pb.StartNew(len(samples))
+	err := runner.app.Train(brainID, samples, func() {
+		bar.Increment()
+	})
+	bar.Finish()
+	if err != nil {
+		runner.Err(err)
+	}
+	runner.Out("the training is finished")
+}
+
+func readSamples(runner *CommandsRunner, in io.Reader) []Sample {
 	reader := csv.NewReader(in)
 	var samples []entity.Sample
+	t := time.Now()
 	for {
 		columns, err := reader.Read()
 		if err == io.EOF {
@@ -71,13 +86,9 @@ func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 		}
 		samples = append(samples, sample)
 	}
-	bar := pb.StartNew(len(samples))
-	err := runner.app.Train(brainID, samples, func() {
-		bar.Increment()
-	})
-	bar.Finish()
-	if err != nil {
-		runner.Err(err)
-	}
-	runner.Out("the training is finished")
+	duration := time.Since(t)
+	samplesPerSecond := float64(len(samples)) / duration.Seconds()
+	runner.Out(fmt.Sprintf("Dataset read for %f seconds (%f samples in second)", duration.Seconds(), samplesPerSecond))
+
+	return samples
 }
