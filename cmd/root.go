@@ -37,6 +37,7 @@ func init() {
 	rootCmd.AddCommand(cmdFactory.NewCmdPredict())
 	rootCmd.AddCommand(cmdFactory.NewCmdBrain())
 	rootCmd.AddCommand(cmdFactory.NewCmdTrain())
+	rootCmd.AddCommand(cmdFactory.NewCmdListen())
 }
 
 // Execute executes the root command.
