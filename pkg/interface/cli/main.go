@@ -17,26 +17,29 @@ import (
 	"io"
 )
 
-type CommandsRunner struct {
-	app AppInterface
-	in io.Reader
-	out io.Writer
-	err io.Writer
-}
-
+// AppInterface defines dependeny which is used to declare what CLI interface can perform
 type AppInterface interface {
-	BrainList () ([]entity.BrainInterface, error)
-	GetBrainByReference (reference string) (entity.BrainInterface, error)
-	CreateBrain (name string, description string) (entity.BrainInterface, error)
-	DeleteBrain (id int64) error
+	BrainList() ([]entity.BrainInterface, error)
+	GetBrainByReference(reference string) (entity.BrainInterface, error)
+	CreateBrain(name string, description string) (entity.BrainInterface, error)
+	DeleteBrain(id int64) error
 
-	Train (brainID int64, samples []entity.Sample, cb func ()) error
+	Train(brainID int64, samples []entity.Sample, cb func()) error
 
 	Predict(brainID int64, text string) (prediction entity.Prediction, err error)
 
 	GetClassByID(classID int64) (entity.ClassInterface, error)
 }
 
+// CommandsRunner contains app and input-output streams
+type CommandsRunner struct {
+	app AppInterface
+	in  io.Reader
+	out io.Writer
+	err io.Writer
+}
+
+// NewCommandsRunner just a simple constructor for CommandsRunner
 func NewCommandsRunner(app AppInterface, in io.Reader, out, err io.Writer) *CommandsRunner {
 	return &CommandsRunner{
 		app: app,
@@ -46,11 +49,13 @@ func NewCommandsRunner(app AppInterface, in io.Reader, out, err io.Writer) *Comm
 	}
 }
 
-func (runner *CommandsRunner) Out (s string) {
+// Out writes string with trailing line break to the standard output stream
+func (runner *CommandsRunner) Out(s string) {
 	writeToStream(runner.out, fmt.Sprintf("%s\n", s))
 }
 
-func (runner *CommandsRunner) Err (err error) {
+// Err writes string with trailing line break to the error stream
+func (runner *CommandsRunner) Err(err error) {
 	writeToStream(runner.err, fmt.Sprintf("error: %s\n", err))
 }
 

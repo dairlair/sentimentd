@@ -1,13 +1,16 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	"github.com/dairlair/sentimentd/pkg/application"
+	"github.com/dairlair/sentimentd/pkg/infrastructure/nats"
 	"github.com/dairlair/sentimentd/pkg/interface/cli"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
-	"strings"
 )
 
 var (
@@ -37,7 +40,10 @@ func init() {
 	rootCmd.AddCommand(cmdFactory.NewCmdPredict())
 	rootCmd.AddCommand(cmdFactory.NewCmdBrain())
 	rootCmd.AddCommand(cmdFactory.NewCmdTrain())
-	rootCmd.AddCommand(cmdFactory.NewCmdListen())
+	x := createNATSStreamingClient("x")
+	y := createNATSStreamingClient("y")
+	x1 := (cli.ReaderProvider)(x)
+	// rootCmd.AddCommand(cmdFactory.NewCmdListen(x.(func() StringReader), y))
 }
 
 // Execute executes the root command.
@@ -54,4 +60,15 @@ func configureViper() {
 	viper.AddConfigPath("./")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetDefault("database.url", "postgres://sentimentd:sentimentd@sentimentd:5432/sentimentd?sslmode=disable")
+}
+
+func createNATSStreamingClient(configPath string) func() *nats.Streaming {
+	return func() *nats.Streaming {
+		client, err := nats.NewStreaming(viper.GetString, configPath)
+		if err != nil {
+			panic(fmt.Sprintf("Could not connect to NATS Streaming: %s", err))
+		}
+
+		return client
+	}
 }
