@@ -2,7 +2,6 @@ package nats
 
 import (
 	stan "github.com/nats-io/go-nats-streaming"
-	"log"
 )
 
 // Configurator is an dependency used for config retrieving
@@ -16,21 +15,16 @@ type config struct {
 
 func newConfig(configurator Configurator, paramsPrefix string) (config, error) {
 	cfg := config{
-		url:       configurator("url"),
-		clusterID: configurator("clusterId"),
-		clientID:  configurator("clientId"),
+		url:       configurator(paramsPrefix + ".url"),
+		clusterID: configurator(paramsPrefix +".clusterId"),
+		clientID:  configurator(paramsPrefix +".clientId"),
 	}
 
 	return cfg, nil
 }
 
-// Streaming wraps the NATS Streaming library
-type Streaming struct {
-	conn stan.Conn
-}
-
 // NewStreaming creates NATS Streaming client instance connected to the specified host
-func NewStreaming(configurator Configurator, paramsPrefix string) (*Streaming, error) {
+func NewStreaming(configurator Configurator, paramsPrefix string) (stan.Conn, error) {
 	cfg, err := newConfig(configurator, paramsPrefix)
 	if err != nil {
 		return nil, err
@@ -41,20 +35,7 @@ func NewStreaming(configurator Configurator, paramsPrefix string) (*Streaming, e
 		return nil, err
 	}
 
-	return &Streaming{
-		conn: conn,
-	}, nil
-}
-
-// ReadString implements StringReader interface
-func (s *Streaming) ReadString() string {
-	log.Fatal("implement me")
-	return ""
-}
-
-// WriteString implements StringWriter interface
-func (s *Streaming) WriteString(str string) {
-	log.Fatal("implement me")
+	return conn, nil
 }
 
 func connect(cfg config) (stan.Conn, error) {

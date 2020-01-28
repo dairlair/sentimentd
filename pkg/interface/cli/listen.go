@@ -2,33 +2,21 @@ package cli
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
-
-	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	stan "github.com/nats-io/go-nats-streaming"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
+	"os"
+	"os/signal"
 )
 
-// StringReader defines dependency which is used to read input messages
-type StringReader interface {
-	ReadString() string
-}
-
-// StringWriter defines dependency which is used to write output messages
-type StringWriter interface {
-	WriteString(string)
-}
-
-type ReaderProvider func() StringReader
-type WriterProvider func() StringWriter
+type QueueCreator func () stan.Conn
 
 // NewCmdListen returns command for a queue listening.
-// The command accepts two parameters which are providers of input and output datasources for the command.
+// The command accepts two parameters which are providers of input and output data sources for the command.
 // Actually command does not know anything about providers realisation.
-func (runner *CommandsRunner) NewCmdListen(rProvider ReaderProvider, wProvider WriterProvider) *cobra.Command {
+func (runner *CommandsRunner) NewCmdListen(creator QueueCreator) *cobra.Command {
 	return &cobra.Command{
 		Use:   "listen",
 		Short: "Listen a configured queue and push analysed message to queue",
@@ -37,48 +25,40 @@ func (runner *CommandsRunner) NewCmdListen(rProvider ReaderProvider, wProvider W
 			brain, err := runner.app.GetBrainByReference(args[0])
 			if err != nil {
 				runner.Err(err)
-
 				return
 			}
 
-			readFromReaderAndWriteToWrite(rProvider(), wProvider())
-
-			if true {
-				return
-			}
-
-			listenFromQueue(runner, brain)
+			readFromReaderAndWriteToWrite(runner, creator(), brain.GetID())
 		},
 	}
 }
 
-func readFromReaderAndWriteToWrite(r StringReader, w StringWriter) {
-	for {
-		msg := r.ReadString()
-		fmt.Printf("Message read from reader: %s\n", msg)
-	}
-}
-
-func listenFromQueue(runner *CommandsRunner, brain entity.BrainInterface) {
-	natsSrvAddr := "nats://127.0.0.1:4222"
-	natsClient, err := stan.Connect("test-cluster", "sentimentd", func(options *stan.Options) error {
-		options.NatsURL = natsSrvAddr
-		return nil
-	})
-	if err != nil {
-		log.Fatalf("Can't connect: %v.\nMake sure a NATS Streaming Server is running at: %s", err, natsSrvAddr)
-	}
-	defer natsClient.Close()
-	fmt.Println("Connected to NATS Streaming server")
-	natsClient.Subscribe("TweetWatch.TweetSaved", func(msg *stan.Msg) {
-		//fmt.Printf("JSON received: %s\n", msg.Data)
-		text := gjson.Get(string(msg.Data), "fullText")
-		fmt.Printf("Message retrieved: %s\n", text.Str)
-		_, err := runner.app.Predict(brain.GetID(), text.Str)
+func readFromReaderAndWriteToWrite(runner *CommandsRunner, conn stan.Conn, brainId int64) {
+	s, err := conn.Subscribe("TweetSaved", func(msg *stan.Msg) {
+		json := string(msg.Data)
+		text := gjson.Get(json, "fullText")
+		fmt.Printf("Message retrieved: %s\n\n", text.Str)
+		prediction, err := analyse(runner, brainId, text.Str)
 		if err != nil {
-			runner.Err(err)
+			log.Errorf("Prediction failed: %s", err)
+			return
+		}
+
+		data, err := sjson.Set(json, "prediction", prediction)
+		if err != nil {
+			log.Errorf("JSON Modification failed: %s", err)
+			return
+		}
+
+		err = conn.Publish("TweetAnalysed", []byte(data))
+		if err != nil {
+			log.Errorf("Prediction results publish failed: %s", err)
+			return
 		}
 	})
+	if err != nil {
+		log.Fatalf("Can not subscribe: %s", err)
+	}
 
 	signalChan := make(chan os.Signal, 1)
 	cleanupDone := make(chan bool)
@@ -86,8 +66,29 @@ func listenFromQueue(runner *CommandsRunner, brain entity.BrainInterface) {
 	go func() {
 		for range signalChan {
 			fmt.Printf("\nReceived an interrupt, unsubscribing and closing connection...\n\n")
+			_ = s.Close()
 			cleanupDone <- true
 		}
 	}()
 	<-cleanupDone
+}
+
+func analyse(runner *CommandsRunner, brainID int64, text string) (json string, err error) {
+	prediction, err := runner.app.Predict(brainID, text)
+	if err != nil {
+		return "", err
+	}
+
+	json = "{}"
+	for _, classID := range prediction.GetClassIDs() {
+		class, _ := runner.app.GetClassByID(classID)
+		probability := prediction.GetClassProbability(classID)
+		json, err = sjson.Set(json, class.GetLabel(), probability)
+		if err != nil {
+
+			return "", err
+		}
+	}
+
+	return json, nil
 }

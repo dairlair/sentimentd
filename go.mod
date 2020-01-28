@@ -16,4 +16,5 @@ require (
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.3.0
 	github.com/tidwall/gjson v1.4.0
+	github.com/tidwall/sjson v1.0.4
 )
