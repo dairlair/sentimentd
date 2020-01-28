@@ -9,6 +9,7 @@ import (
 	"github.com/tidwall/sjson"
 	"os"
 	"os/signal"
+	"time"
 )
 
 type QueueCreator func () stan.Conn
@@ -38,13 +39,22 @@ func readFromReaderAndWriteToWrite(runner *CommandsRunner, conn stan.Conn, brain
 		json := string(msg.Data)
 		text := gjson.Get(json, "fullText")
 		fmt.Printf("Message retrieved: %s\n\n", text.Str)
+		t := time.Now()
 		prediction, err := analyse(runner, brainId, text.Str)
+		d := time.Since(t)
+		log.Infof("Message analysed for %d μs", d.Nanoseconds() / 1000)
 		if err != nil {
 			log.Errorf("Prediction failed: %s", err)
 			return
 		}
 
-		data, err := sjson.Set(json, "prediction", prediction)
+		data, err := sjson.Set(json, "prediction.probabilities", prediction)
+		if err != nil {
+			log.Errorf("JSON Modification failed: %s", err)
+			return
+		}
+
+		data, err = sjson.Set(data, "prediction.duration", d.Seconds())
 		if err != nil {
 			log.Errorf("JSON Modification failed: %s", err)
 			return
