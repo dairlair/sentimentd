@@ -12,12 +12,13 @@ import (
 	"time"
 )
 
-type QueueCreator func () stan.Conn
+// QueueCreator describes dependency which is used to run-time getting connection to NATS Streaming
+type QueueCreator func() stan.Conn
 
 // NewCmdListen returns command for a queue listening.
 // The command accepts two parameters which are providers of input and output data sources for the command.
 // Actually command does not know anything about providers realisation.
-func (runner *CommandsRunner) NewCmdListen(creator QueueCreator) *cobra.Command {
+func (runner *CommandsRunner) NewCmdListen(queueCreator QueueCreator) *cobra.Command {
 	return &cobra.Command{
 		Use:   "listen",
 		Short: "Listen a configured queue and push analysed message to queue",
@@ -29,20 +30,21 @@ func (runner *CommandsRunner) NewCmdListen(creator QueueCreator) *cobra.Command 
 				return
 			}
 
-			readFromReaderAndWriteToWrite(runner, creator(), brain.GetID())
+			queue := queueCreator()
+			readFromReaderAndWriteToWrite(runner, queue, brain.GetID())
 		},
 	}
 }
 
-func readFromReaderAndWriteToWrite(runner *CommandsRunner, conn stan.Conn, brainId int64) {
+func readFromReaderAndWriteToWrite(runner *CommandsRunner, conn stan.Conn, brainID int64) {
 	s, err := conn.Subscribe("TweetSaved", func(msg *stan.Msg) {
 		json := string(msg.Data)
 		text := gjson.Get(json, "fullText")
 		fmt.Printf("Message retrieved: %s\n\n", text.Str)
 		t := time.Now()
-		prediction, err := analyse(runner, brainId, text.Str)
+		prediction, err := analyse(runner, brainID, text.Str)
 		d := time.Since(t)
-		log.Infof("Message analysed for %d μs", d.Nanoseconds() / 1000)
+		log.Infof("Message analysed for %d μs", d.Nanoseconds()/1000)
 		if err != nil {
 			log.Errorf("Prediction failed: %s", err)
 			return

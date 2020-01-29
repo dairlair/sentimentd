@@ -6,14 +6,15 @@ type Prediction struct {
 
 func NewPrediction(probabilities map[int64]float64) Prediction {
 	return Prediction{
-		probabilities:probabilities,
+		probabilities: probabilities,
 	}
 }
 
 // Returns identifiers list of predicted classes
 func (p *Prediction) GetClassIDs() []int64 {
 	ids := make([]int64, len(p.probabilities))
-	var i int64 = 0; for id, _ := range p.probabilities {
+	var i int64 = 0
+	for id, _ := range p.probabilities {
 		ids[i] = id
 		i++
 	}
