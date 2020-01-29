@@ -22,7 +22,7 @@ func (runner *CommandsRunner) NewCmdListen(queueCreator QueueCreator) *cobra.Com
 	return &cobra.Command{
 		Use:   "listen",
 		Short: "Listen a configured queue and push analysed message to queue",
-		Args:  cobra.MinimumNArgs(1),
+		Args:  cobra.MinimumNArgs(3),
 		Run: func(cmd *cobra.Command, args []string) {
 			brain, err := runner.app.GetBrainByReference(args[0])
 			if err != nil {
@@ -30,46 +30,23 @@ func (runner *CommandsRunner) NewCmdListen(queueCreator QueueCreator) *cobra.Com
 				return
 			}
 
+			sourceChannel := args[1]
+			targetChannel := args[2]
+
 			queue := queueCreator()
-			readFromReaderAndWriteToWrite(runner, queue, brain.GetID())
+			readFromReaderAndWriteToWrite(runner, queue, brain.GetID(), sourceChannel, targetChannel)
 		},
 	}
 }
 
-func readFromReaderAndWriteToWrite(runner *CommandsRunner, conn stan.Conn, brainID int64) {
-	s, err := conn.Subscribe("TweetSaved", func(msg *stan.Msg) {
-		json := string(msg.Data)
-		text := gjson.Get(json, "fullText")
-		fmt.Printf("Message retrieved: %s\n\n", text.Str)
-		t := time.Now()
-		prediction, err := analyse(runner, brainID, text.Str)
-		d := time.Since(t)
-		log.Infof("Message analysed for %d μs", d.Nanoseconds()/1000)
-		if err != nil {
-			log.Errorf("Prediction failed: %s", err)
-			return
-		}
-
-		data, err := sjson.Set(json, "prediction.probabilities", prediction)
-		if err != nil {
-			log.Errorf("JSON Modification failed: %s", err)
-			return
-		}
-
-		data, err = sjson.Set(data, "prediction.duration", d.Seconds())
-		if err != nil {
-			log.Errorf("JSON Modification failed: %s", err)
-			return
-		}
-
-		err = conn.Publish("TweetAnalysed", []byte(data))
-		if err != nil {
-			log.Errorf("Prediction results publish failed: %s", err)
-			return
-		}
+func readFromReaderAndWriteToWrite(runner *CommandsRunner, conn stan.Conn, brainID int64, source string, target string) {
+	subscription, err := conn.Subscribe(source, func(msg *stan.Msg) {
+		processJSONAndPushBack(conn, target, string(msg.Data), func(text string) (string, error) {
+			return analyse(runner, brainID, text)
+		})
 	})
 	if err != nil {
-		log.Fatalf("Can not subscribe: %s", err)
+		log.Fatalf("Can not subscribe to channel [%s]: %s", source, err)
 	}
 
 	signalChan := make(chan os.Signal, 1)
@@ -77,12 +54,43 @@ func readFromReaderAndWriteToWrite(runner *CommandsRunner, conn stan.Conn, brain
 	signal.Notify(signalChan, os.Interrupt)
 	go func() {
 		for range signalChan {
-			fmt.Printf("\nReceived an interrupt, unsubscribing and closing connection...\n\n")
-			_ = s.Close()
+			runner.Out("Received an interrupt, unsubscribing and closing connection...")
+			_ = subscription.Close()
 			cleanupDone <- true
 		}
 	}()
 	<-cleanupDone
+}
+
+func processJSONAndPushBack(conn stan.Conn, target string, json string, analyser func(text string) (string, error)) {
+	text := gjson.Get(json, "fullText")
+	fmt.Printf("Message retrieved: %s\n\n", text.Str)
+	t := time.Now()
+	prediction, err := analyser(text.Str)
+	d := time.Since(t)
+	log.Infof("Message analysed for %d μs", d.Nanoseconds()/1000)
+	if err != nil {
+		log.Errorf("Prediction failed: %s", err)
+		return
+	}
+
+	data, err := sjson.Set(json, "prediction.probabilities", prediction)
+	if err != nil {
+		log.Errorf("JSON Modification failed: %s", err)
+		return
+	}
+
+	data, err = sjson.Set(data, "prediction.duration", d.Seconds())
+	if err != nil {
+		log.Errorf("JSON Modification failed: %s", err)
+		return
+	}
+
+	err = conn.Publish("TweetAnalysed", []byte(data))
+	if err != nil {
+		log.Errorf("Prediction results publish failed: %s", err)
+		return
+	}
 }
 
 func analyse(runner *CommandsRunner, brainID int64, text string) (json string, err error) {
