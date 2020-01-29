@@ -1,7 +1,13 @@
 package entity
 
+import (
+	"encoding/json"
+	"time"
+)
+
 type Prediction struct {
 	probabilities map[int64]float64
+	duration      time.Duration
 }
 
 func NewPrediction(probabilities map[int64]float64) Prediction {
@@ -30,4 +36,26 @@ func (p *Prediction) GetClassProbability(classID int64) float64 {
 	}
 
 	return 0
+}
+
+// HumanizedPrediction describes structure which contains class labels and their probabilities
+type HumanizedPrediction struct {
+	Probabilities map[string]float64 `json:"probabilities"`
+	Duration      float64            `json:"duration"`
+}
+
+func NewHumanizedPrediction(probabilities map[string]float64, duration time.Duration) HumanizedPrediction {
+	return HumanizedPrediction{
+		Probabilities: probabilities,
+		Duration:      duration.Seconds(),
+	}
+}
+
+func (hp HumanizedPrediction) JSON() (string, error) {
+	str, err := json.Marshal(hp)
+	if err != nil {
+		return "", err
+	}
+
+	return string(str), nil
 }

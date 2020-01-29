@@ -26,7 +26,9 @@ type AppInterface interface {
 
 	Train(brainID int64, samples []entity.Sample, cb func()) error
 
+	// @TODO Not used, remove from here
 	Predict(brainID int64, text string) (prediction entity.Prediction, err error)
+	HumanizedPredict(brainID int64, text string) (prediction entity.HumanizedPrediction, err error)
 
 	GetClassByID(classID int64) (entity.ClassInterface, error)
 }

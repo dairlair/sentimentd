@@ -2,12 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/dairlair/sentimentd/pkg/infrastructure/nats"
 	stan "github.com/nats-io/go-nats-streaming"
 	"os"
 	"strings"
 
 	"github.com/dairlair/sentimentd/pkg/application"
-	"github.com/dairlair/sentimentd/pkg/infrastructure/nats"
 	"github.com/dairlair/sentimentd/pkg/interface/cli"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -42,7 +42,9 @@ func init() {
 	rootCmd.AddCommand(cmdFactory.NewCmdBrain())
 	rootCmd.AddCommand(cmdFactory.NewCmdTrain())
 
-	queueCreator := func() stan.Conn { return getNATSStreaming("listen") }
+	queueCreator := func() (stan.Conn, string, string) {
+		return getNATSStreaming("listen")
+	}
 	rootCmd.AddCommand(cmdFactory.NewCmdListen(queueCreator))
 }
 
@@ -62,11 +64,21 @@ func configureViper() {
 	viper.SetDefault("database.url", "postgres://sentimentd:sentimentd@sentimentd:5432/sentimentd?sslmode=disable")
 }
 
-func getNATSStreaming(configPath string) stan.Conn {
+func getNATSStreaming(configPath string) (stan.Conn, string, string) {
 	client, err := nats.NewStreaming(viper.GetString, configPath)
 	if err != nil {
 		panic(fmt.Sprintf("Could not connect to NATS Streaming: %s", err))
 	}
 
-	return client
+	source := requireConfigParameter("listen.source")
+	target := requireConfigParameter("listen.target")
+
+	return client, source, target
+}
+
+func requireConfigParameter(path string) string {
+	if value := viper.GetString(path); value != "" {
+		return value
+	}
+	panic(fmt.Sprintf("Parameter %s must be non-empty", path))
 }
