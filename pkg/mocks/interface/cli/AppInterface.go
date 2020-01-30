@@ -118,6 +118,27 @@ func (_m *AppInterface) GetClassByID(classID int64) (entity.ClassInterface, erro
 	return r0, r1
 }
 
+// HumanizedPredict provides a mock function with given fields: brainID, text
+func (_m *AppInterface) HumanizedPredict(brainID int64, text string) (entity.HumanizedPrediction, error) {
+	ret := _m.Called(brainID, text)
+
+	var r0 entity.HumanizedPrediction
+	if rf, ok := ret.Get(0).(func(int64, string) entity.HumanizedPrediction); ok {
+		r0 = rf(brainID, text)
+	} else {
+		r0 = ret.Get(0).(entity.HumanizedPrediction)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(int64, string) error); ok {
+		r1 = rf(brainID, text)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Predict provides a mock function with given fields: brainID, text
 func (_m *AppInterface) Predict(brainID int64, text string) (entity.Prediction, error) {
 	ret := _m.Called(brainID, text)
