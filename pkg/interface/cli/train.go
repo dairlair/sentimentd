@@ -3,15 +3,17 @@ package cli
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/cheggaaa/pb/v3"
-	. "github.com/dairlair/sentimentd/pkg/domain/entity"
-	"github.com/spf13/cobra"
 	"io"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/cheggaaa/pb/v3"
+	"github.com/dairlair/sentimentd/pkg/domain/entity"
+	"github.com/spf13/cobra"
 )
 
+// NewCmdTrain returns command for brain training
 func (runner *CommandsRunner) NewCmdTrain() *cobra.Command {
 	return &cobra.Command{
 		Use:   "train",
@@ -48,7 +50,7 @@ func trainFromFile(runner *CommandsRunner, brainID int64, filename string) {
 
 func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 	reader := csv.NewReader(in)
-	var samples []Sample
+	var samples []entity.Sample
 	for {
 		columns, err := reader.Read()
 		if err == io.EOF {
@@ -57,14 +59,14 @@ func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 		if err != nil {
 			runner.Err(err)
 		}
-		sample := Sample{
+		sample := entity.Sample{
 			Sentence: columns[1],
-			Classes: strings.Split(columns[0], ","),
+			Classes:  strings.Split(columns[0], ","),
 		}
 		samples = append(samples, sample)
 	}
 	bar := pb.StartNew(len(samples))
-	err := runner.app.Train(brainID, samples, func () {
+	err := runner.app.Train(brainID, samples, func() {
 		bar.Increment()
 	})
 	bar.Finish()

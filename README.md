@@ -1,6 +1,6 @@
 # Sentiment Analysis Daemon (sentimentd)
 
-High-performance sentiment analyze service
+High-performance sentiment analysis service
 
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=dairlair_sentimentd)](https://sonarcloud.io/dashboard?id=dairlair_sentimentd)
 
