@@ -24,7 +24,7 @@ type App struct {
 	config          *Config
 	brainRepository BrainRepositoryInterface
 	classRepository ClassRepositoryInterface
-	trainingService *training.TrainingService
+	trainingService *training.Service
 	predictor       *predictor.Predictor
 }
 
