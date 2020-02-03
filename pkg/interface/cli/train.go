@@ -63,7 +63,7 @@ func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 	runner.Out("the training is finished")
 }
 
-func readSamples(runner *CommandsRunner, in io.Reader) []Sample {
+func readSamples(runner *CommandsRunner, in io.Reader) []entity.Sample {
 	reader := csv.NewReader(in)
 	var samples []entity.Sample
 	t := time.Now()
