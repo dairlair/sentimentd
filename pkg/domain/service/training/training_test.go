@@ -2,39 +2,39 @@ package training
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/dairlair/sentimentd/pkg/domain/service/tokenizer"
 	"github.com/dairlair/sentimentd/pkg/infrastructure/model"
 	mocks "github.com/dairlair/sentimentd/pkg/mocks/domain/service/training"
-	"github.com/lukechampine/randmap/safe"
+	randmap "github.com/lukechampine/randmap/safe"
 	"github.com/stretchr/testify/mock"
 	"github.com/tjarratt/babble"
-	"testing"
-	"time"
 )
 
 func BenchmarkTrainingService_Train(b *testing.B) {
-	brainId := int64(1)
+	brainID := int64(1)
 	classes := generateClasses(10)
 	samples := generateSamples(classes, 1000)
 
 	classService := mocks.ClassServiceInterface{}
 	class := &model.Class{
-		Model:   model.Model{ID:777},
+		Model:   model.Model{ID: 777},
 		BrainID: 1,
 		Label:   "qwerty",
 	}
 	classService.On("FindOrCreate", mock.AnythingOfType("int64"), mock.AnythingOfType("string")).Return(class, nil)
 
 	resultRepository := mocks.ResultsRepositoryInterface{}
-	resultRepository.On("SaveResult", brainId, mock.AnythingOfType("result.TrainingResult")).Return(nil)
+	resultRepository.On("SaveResult", brainID, mock.AnythingOfType("result.TrainingResult")).Return(nil)
 
 	tokenizerService := tokenizer.NewTokenizer()
 
-
 	tokenService := mocks.TokenServiceInterface{}
 	token := &model.Token{
-		Model:   model.Model{
+		Model: model.Model{
 			ID:        1,
 			CreatedAt: time.Time{},
 			DeletedAt: nil,
@@ -46,7 +46,7 @@ func BenchmarkTrainingService_Train(b *testing.B) {
 
 	service := NewTrainingService(&classService, &resultRepository, &tokenizerService, &tokenService)
 
-	_ = service.Train(brainId, samples, func() {})
+	_ = service.Train(brainID, samples, func() {})
 }
 
 func generateClasses(count int64) map[string]entity.ClassInterface {
@@ -55,7 +55,7 @@ func generateClasses(count int64) map[string]entity.ClassInterface {
 	for i := int64(0); i < count; i++ {
 		label := fmt.Sprintf("class_%d", i)
 		class := &model.Class{
-			Model:   model.Model{ID:count},
+			Model:   model.Model{ID: count},
 			BrainID: 1,
 			Label:   label,
 		}
