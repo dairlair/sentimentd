@@ -14,7 +14,7 @@ clean:
 	rm -rf build/*
 
 test: build
-	go test -short -coverprofile=build/cov.out `go list ./... | grep -v vendor/`
+	go test -mod=vendor -short -coverprofile=build/cov.out `go list ./... | grep -v vendor/`
 	go tool cover -func=build/cov.out
 
 .PHONY: migrate

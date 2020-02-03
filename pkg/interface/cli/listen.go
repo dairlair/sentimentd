@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"github.com/dairlair/sentimentd/pkg/interface/cli/util"
 	stan "github.com/nats-io/go-nats-streaming"
 	log "github.com/sirupsen/logrus"
@@ -14,12 +13,11 @@ import (
 type QueueCreator func() (stan.Conn, string, string)
 
 type producer interface {
-
 }
 
-type processor func (input string) (output string, err error)
+type processor func(input string) (output string, err error)
 
-type consumer func ([]byte)
+type consumer func([]byte)
 
 // NewCmdListen returns command for a queue listening.
 // @TODO This command should be completely refactored.
@@ -37,7 +35,7 @@ func (runner *CommandsRunner) NewCmdListen(queueCreator QueueCreator) *cobra.Com
 
 			queue, source, target := queueCreator()
 
-			var pr processor = func (input string) (output string, err error) {
+			var pr processor = func(input string) (output string, err error) {
 				return analyse(runner, brain.GetID(), input)
 			}
 
@@ -47,17 +45,19 @@ func (runner *CommandsRunner) NewCmdListen(queueCreator QueueCreator) *cobra.Com
 }
 
 func readFromReaderAndWriteToWrite(conn stan.Conn, source string, target string, pr processor) {
-	var cb consumer = func (data []byte) {
+	var cb consumer = func(data []byte) {
 		err := conn.Publish(target, data)
 		if err != nil {
 			log.Errorf("Prediction results publish failed: %s", err)
 		}
+		log.Infof("Message published: %s", data)
 	}
 
 	subscription, err := conn.Subscribe(source, func(msg *stan.Msg) {
 		processJSONAndPushBack(cb, string(msg.Data), func(text string) (string, error) {
 			return pr(text)
 		})
+		msg.Ack()
 	})
 	if err != nil {
 		log.Fatalf("Can not subscribe to channel [%s]: %s", source, err)
@@ -70,7 +70,6 @@ func readFromReaderAndWriteToWrite(conn stan.Conn, source string, target string,
 
 func processJSONAndPushBack(cb consumer, json string, analyser func(text string) (string, error)) {
 	text := gjson.Get(json, "fullText")
-	fmt.Printf("Message retrieved: %s\n\n", text.Str)
 
 	prediction, err := analyser(text.Str)
 	if err != nil {

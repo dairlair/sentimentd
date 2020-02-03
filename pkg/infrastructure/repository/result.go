@@ -101,7 +101,7 @@ func (repo resultRepository) GetTrainedModel(brainID int64) (trainedModel classi
 	if m.ClassSize, err = getClassSize(repo.db, brainID); err != nil {
 		return nil, err
 	}
-	if m.TokenFrequency ,err = getTokenFrequency(repo.db, brainID); err != nil {
+	if m.TokenFrequency, err = getTokenFrequency(repo.db, brainID); err != nil {
 		return nil, err
 	}
 	return &m, nil
@@ -126,7 +126,6 @@ func getClassFrequency(db *gorm.DB, brainID int64) (r result.ClassFrequency, err
 		Where("deleted_at IS NULL and brain_id = ?", brainID).
 		Group("class_id").
 		Rows()
-
 
 	if err != nil {
 		return r, err
@@ -165,7 +164,7 @@ func getUniqueTokensCount(db *gorm.DB, brainID int64) (int64, error) {
 	return r.UniqueTokensCount, nil
 }
 
-func getClassSize (db *gorm.DB, brainID int64) (entity.ClassSizeMap, error) {
+func getClassSize(db *gorm.DB, brainID int64) (entity.ClassSizeMap, error) {
 	r := entity.ClassSizeMap{}
 
 	rows, err := db.
@@ -175,7 +174,6 @@ func getClassSize (db *gorm.DB, brainID int64) (entity.ClassSizeMap, error) {
 		Group("class_id").
 		Rows()
 
-
 	if err != nil {
 		return r, err
 	}
@@ -184,7 +182,7 @@ func getClassSize (db *gorm.DB, brainID int64) (entity.ClassSizeMap, error) {
 
 	for rows.Next() {
 		classSize := struct {
-			ClassID      int64
+			ClassID     int64
 			TokensCount int64
 		}{}
 		err = db.ScanRows(rows, &classSize)
@@ -197,7 +195,7 @@ func getClassSize (db *gorm.DB, brainID int64) (entity.ClassSizeMap, error) {
 	return r, nil
 }
 
-func getTokenFrequency (db *gorm.DB, brainID int64) (result.TokenFrequency, error) {
+func getTokenFrequency(db *gorm.DB, brainID int64) (result.TokenFrequency, error) {
 	r := result.TokenFrequency{}
 
 	rows, err := db.
@@ -215,9 +213,9 @@ func getTokenFrequency (db *gorm.DB, brainID int64) (result.TokenFrequency, erro
 
 	for rows.Next() {
 		tokenFrequency := struct {
-			ClassID      int64
-			TokenID      int64
-			Count int64
+			ClassID int64
+			TokenID int64
+			Count   int64
 		}{}
 		err = db.ScanRows(rows, &tokenFrequency)
 		if err != nil {
