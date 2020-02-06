@@ -13,12 +13,18 @@ import (
 	"net/url"
 )
 
+// Config contains a configuration which is required for Apps
 type Config struct {
+	Log struct {
+		Level  string
+		Format string
+	}
 	Database struct {
 		URL string
 	}
 }
 
+// App is used to contains all services together and control their life
 type App struct {
 	db              *gorm.DB
 	config          *Config
@@ -28,6 +34,7 @@ type App struct {
 	predictor       *predictor.Predictor
 }
 
+// NewApp creates new App
 func NewApp(config Config) *App {
 	app := &App{
 		config: &config,
@@ -35,6 +42,8 @@ func NewApp(config Config) *App {
 	return app
 }
 
+// Init runs initialization for all application components.
+// Requires database and other external services are available.
 func (app *App) Init() {
 	databaseURL, err := url.Parse(app.config.Database.URL)
 	if err != nil {
@@ -57,6 +66,7 @@ func (app *App) Init() {
 	app.predictor = predictor.NewPredictor(&defaultTokenizer, tokenRepository, resultsRepository)
 }
 
+// Destroy closes all connections
 func (app *App) Destroy() {
 	err := app.db.Close()
 	if err != nil {
