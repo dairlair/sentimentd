@@ -14,5 +14,5 @@ ADD ./schema /var/lib/sentimentd/schema
 RUN mkdir /etc/sentimentd
 RUN touch /etc/sentimentd/sentimentd.yml
 
-CMD ["brain ls"]
+CMD ["brain", "ls"]
 ENTRYPOINT ["/bin/sentimentd"]
