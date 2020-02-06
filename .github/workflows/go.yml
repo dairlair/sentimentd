@@ -23,10 +23,10 @@ jobs:
     - name: Test
       run: make test
 
-    - name: Archive code coverage results
+    - name: Archive build artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: code-coverage-report
+        name: build-artifacts
         path: build
 
   analyze:
@@ -38,10 +38,10 @@ jobs:
     - name: Clone Repository
       uses: actions/checkout@master
 
-    - name: Download code coverage results
+    - name: Download build artifacts
       uses: actions/download-artifact@v1
       with:
-        name: code-coverage-report
+        name: build-artifacts
         path: build
 
     - name: Analyze with SonarCloud
@@ -49,3 +49,25 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  docker:
+    needs: build
+    name: Build and publish docker image
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Clone Repository
+      uses: actions/checkout@master
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v1
+      with:
+        name: build-artifacts
+        path: build
+
+    - name: Publish docker image to Registry
+      uses: elgohr/Publish-Docker-Github-Action@master
+      with:
+        name: dairlair/repository
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}

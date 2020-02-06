@@ -1,3 +1,10 @@
+log:
+  # Available values: panic, fatal, error, warn, warning, info, debug, trace
+  # If omitted or empty then 'warn' level will be used
+  level: "info"
+  # Available values: json, text
+  format: "json"
+
 database:
   url: postgres://sentimentd:sentimentd@localhost:5432/sentimentd?sslmode=disable
 
