@@ -51,6 +51,8 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   docker:
+    needs: build
+    name: Build and publish docker image
     runs-on: ubuntu-latest
     steps:
 
