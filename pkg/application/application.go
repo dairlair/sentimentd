@@ -11,6 +11,7 @@ import (
 	"github.com/jinzhu/gorm"
 	log "github.com/sirupsen/logrus"
 	"net/url"
+	"time"
 )
 
 // Config contains a configuration which is required for Apps
@@ -20,7 +21,8 @@ type Config struct {
 		Format string
 	}
 	Database struct {
-		URL string
+		URL               string
+		ConnectionTimeout time.Duration
 	}
 }
 
@@ -49,7 +51,7 @@ func (app *App) Init() {
 	if err != nil {
 		log.Fatalf("Can not parse database URL. %s", err)
 	}
-	app.db = db.CreateDBConnection(databaseURL)
+	app.db = db.CreateDBConnection(databaseURL, app.config.Database.ConnectionTimeout)
 	app.brainRepository = repository.NewBrainRepository(app.db)
 	app.classRepository = repository.NewClassRepository(app.db)
 	tokenRepository := repository.NewTokenRepository(app.db)

@@ -6,6 +6,7 @@ import (
 	stan "github.com/nats-io/go-nats-streaming"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/dairlair/sentimentd/pkg/application"
 	"github.com/dairlair/sentimentd/pkg/interface/cli"
@@ -57,8 +58,12 @@ func readConfig() (application.Config, error) {
 			Level:  viper.GetString("log.level"),
 			Format: viper.GetString("log.format"),
 		},
-		Database: struct{ URL string }{
-			URL: viper.GetString("database.url"),
+		Database: struct {
+			URL               string
+			ConnectionTimeout time.Duration
+		}{
+			URL:               viper.GetString("database.url"),
+			ConnectionTimeout: viper.GetDuration("database.timeout"),
 		},
 	}
 	return config, nil
@@ -73,6 +78,7 @@ func configureViper() {
 	viper.AddConfigPath("./")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.SetDefault("database.url", "postgres://sentimentd:sentimentd@sentimentd:5432/sentimentd?sslmode=disable")
+	viper.SetDefault("database.timeout", "10s")
 	viper.SetDefault("log.level", "warn")
 	viper.SetDefault("log.format", "text")
 }

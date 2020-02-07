@@ -7,6 +7,7 @@ log:
 
 database:
   url: postgres://sentimentd:sentimentd@localhost:5432/sentimentd?sslmode=disable
+  timeout: "10s"
 
 # The configuration presented bellow runs sentimentd as a daemon which subscribed to messages
 # from NATS Streaming server, analyses them though brain "skynet" and pushes the results to the NATS Streaming back.

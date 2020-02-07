@@ -2,15 +2,18 @@ package db
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/sirupsen/logrus"
-	"net/url"
-	"strings"
+	log "github.com/sirupsen/logrus"
 )
 
-//returns a handle to the DB object
-func CreateDBConnection(url *url.URL) *gorm.DB {
+// CreateDBConnection returns a handle to the DB object
+func CreateDBConnection(url *url.URL, timeout time.Duration) *gorm.DB {
 
 	if url.Scheme != "postgres" {
 		logrus.Fatalf("Unsupported database scheme [%s]", url.Scheme)
@@ -25,10 +28,18 @@ func CreateDBConnection(url *url.URL) *gorm.DB {
 	query := url.RawQuery // Here will be passed all options of connections, like a `sslmode=disable`
 	connString := fmt.Sprintf(connFmt, host, port, user, password, database, query)
 
-	db, err := gorm.Open(url.Scheme, connString)
-	if err != nil {
-		logrus.Fatalf("Database connection is not open. %s", err)
+	t := time.Now()
+	log.Infof("Database connection timeout: %f seconds", timeout.Seconds())
+	for {
+		db, err := gorm.Open(url.Scheme, connString)
+		if err == nil {
+			return db
+		}
+		if time.Since(t).Seconds() < timeout.Seconds() {
+			continue
+		} else {
+			d := time.Since(t)
+			log.Fatalf("Database connection is not open for %f seconds. %s", d.Seconds(), err)
+		}
 	}
-
-	return db
 }
