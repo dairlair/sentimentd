@@ -5,6 +5,7 @@ import (
 	stan "github.com/nats-io/go-nats-streaming"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
@@ -15,7 +16,7 @@ type QueueCreator func() (stan.Conn, string, string)
 type producer interface {
 }
 
-type processor func(input string) (output string, err error)
+type processor func(input string) (output string)
 
 type consumer func([]byte)
 
@@ -25,18 +26,25 @@ func (runner *CommandsRunner) NewCmdListen(queueCreator QueueCreator) *cobra.Com
 	return &cobra.Command{
 		Use:   "listen",
 		Short: "Listen a configured queue and push analysed message to queue",
-		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			brain, err := runner.app.GetBrainByReference(args[0])
-			if err != nil {
-				runner.Err(err)
-				return
+			var brainReferences []string
+			if len(args) == 0 {
+				// Try to gen brain references from config
+				brainReferences = viper.GetStringSlice("listen.brains")
+			} else {
+				brainReferences = args
+			}
+
+			log.Infof("Listen brains: %v", brainReferences)
+			brainsMap := getBrainsMap(runner, brainReferences)
+			if len(brainsMap) == 0 {
+				log.Error("No brains found, exit...")
 			}
 
 			queue, source, target := queueCreator()
 
-			var pr processor = func(input string) (output string, err error) {
-				return analyse(runner, brain.GetID(), input)
+			var pr processor = func(input string) (output string) {
+				return analyse(runner, brainsMap, input)
 			}
 
 			readFromReaderAndWriteToWrite(queue, source, target, pr)
@@ -54,7 +62,7 @@ func readFromReaderAndWriteToWrite(conn stan.Conn, source string, target string,
 	}
 
 	subscription, err := conn.Subscribe(source, func(msg *stan.Msg) {
-		processJSONAndPushBack(cb, string(msg.Data), func(text string) (string, error) {
+		processJSONAndPushBack(cb, string(msg.Data), func(text string) string {
 			return pr(text)
 		})
 		msg.Ack()
@@ -68,29 +76,44 @@ func readFromReaderAndWriteToWrite(conn stan.Conn, source string, target string,
 	})
 }
 
-func processJSONAndPushBack(cb consumer, json string, analyser func(text string) (string, error)) {
+func processJSONAndPushBack(cb consumer, json string, analyser func(text string) string) {
 	text := gjson.Get(json, "fullText")
-
-	prediction, err := analyser(text.Str)
-	if err != nil {
-		log.Errorf("Prediction failed: %s", err)
-		return
-	}
-
+	prediction := analyser(text.Str)
 	data, err := sjson.Set(json, "prediction", prediction)
 	if err != nil {
 		log.Errorf("JSON Modification failed: %s", err)
 		return
 	}
-
 	cb([]byte(data))
 }
 
-func analyse(runner *CommandsRunner, brainID int64, text string) (json string, err error) {
-	prediction, err := runner.app.HumanizedPredict(brainID, text)
-	if err != nil {
-		return "", err
+func analyse(runner *CommandsRunner, brainsMap map[int64]string, text string) string {
+	json := ""
+	for brainID, reference := range brainsMap {
+		prediction, err := runner.app.HumanizedPredict(brainID, text)
+		if err != nil {
+			log.Errorf("Prediction failed. %s", err)
+			continue
+		}
+		predictionJSON, _ := prediction.JSON()
+		json, err = sjson.Set(json, reference, predictionJSON)
+		if err != nil {
+			log.Errorf("JSON set failed. %s", err)
+		}
 	}
+	return json
+}
 
-	return prediction.JSON()
+func getBrainsMap(runner *CommandsRunner, references []string) map[int64]string {
+	var brainsMap map[int64]string = make(map[int64]string)
+	for _, reference := range references {
+		brain, err := runner.app.GetBrainByReference(reference)
+		if err != nil {
+			log.Error(err)
+		} else {
+			brainsMap[brain.GetID()] = brain.GetName()
+		}
+
+	}
+	return brainsMap
 }

@@ -25,9 +25,9 @@ var migrateCmd = &cobra.Command{
 var migrateUpCmd = &cobra.Command{
 	Use:   "up",
 	Short: "Apply migrations to the database",
-	Long:  `Apply the database migrations from ./schema/postgres directory`,
+	Long:  `Apply the database migrations`,
 	Run: func(cmd *cobra.Command, args []string) {
-		execute(func (m *migrate.Migrate) error {
+		execute(func(m *migrate.Migrate) error {
 			return m.Up()
 		})
 	},
@@ -37,15 +37,15 @@ var migrateDownCmd = &cobra.Command{
 	Use:   "down",
 	Short: "Rollback migrations in the database",
 	Run: func(cmd *cobra.Command, args []string) {
-		execute(func (m *migrate.Migrate) error {
+		execute(func(m *migrate.Migrate) error {
 			return m.Down()
 		})
 	},
 }
 
-func execute(f func (*migrate.Migrate) error) {
+func execute(f func(*migrate.Migrate) error) {
 	url := viper.GetString("database.url")
-	m, err := migrate.New("file://schema/postgres", url)
+	m, err := migrate.New(viper.GetString("database.migrationsPath"), url)
 	if err != nil {
 		log.Fatal(err)
 	}
