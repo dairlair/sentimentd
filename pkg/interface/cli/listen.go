@@ -38,7 +38,7 @@ func (runner *CommandsRunner) NewCmdListen(queueCreator QueueCreator) *cobra.Com
 			log.Infof("Listen brains: %v", brainReferences)
 			brainsMap := getBrainsMap(runner, brainReferences)
 			if len(brainsMap) == 0 {
-				log.Error("No brains found, exit...")
+				log.Fatalf("No brains found, exit...")
 			}
 
 			queue, source, target := queueCreator()
