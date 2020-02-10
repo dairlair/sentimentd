@@ -23,6 +23,8 @@ type Config struct {
 	Database struct {
 		URL               string
 		ConnectionTimeout time.Duration
+		Automigrate       bool
+		MigrationsPath    string
 	}
 }
 
@@ -47,6 +49,9 @@ func NewApp(config Config) *App {
 // Init runs initialization for all application components.
 // Requires database and other external services are available.
 func (app *App) Init() {
+	if app.config.Database.Automigrate {
+		app.Migrate()
+	}
 	databaseURL, err := url.Parse(app.config.Database.URL)
 	if err != nil {
 		log.Fatalf("Can not parse database URL. %s", err)

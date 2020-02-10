@@ -7,7 +7,12 @@ log:
 
 database:
   url: postgres://sentimentd:sentimentd@localhost:5432/sentimentd?sslmode=disable
+  # Database trying to connect timeout. Actually tries to connect to database (using)
   timeout: "10s"
+  # Default: true. When set to true then each command will try to apply migrations first.
+  automigrate: true
+  # Path to DB migrations, default value is "file://schema/postgres"
+  migrationsPath: "file://schema/postgres"
 
 # The configuration presented bellow runs sentimentd as a daemon which subscribed to messages
 # from NATS Streaming server, analyses them though brain "skynet" and pushes the results to the NATS Streaming back.
@@ -17,3 +22,6 @@ listen:
     clientId: "sentimentd-listener"
     source: "TweetSaved"
     target: "TweetAnalysed"
+    brains:
+      - "Skynet"
+      - "Red Queen"

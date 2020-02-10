@@ -14,7 +14,6 @@ import (
 
 // CreateDBConnection returns a handle to the DB object
 func CreateDBConnection(url *url.URL, timeout time.Duration) *gorm.DB {
-
 	if url.Scheme != "postgres" {
 		logrus.Fatalf("Unsupported database scheme [%s]", url.Scheme)
 	}
@@ -29,7 +28,7 @@ func CreateDBConnection(url *url.URL, timeout time.Duration) *gorm.DB {
 	connString := fmt.Sprintf(connFmt, host, port, user, password, database, query)
 
 	t := time.Now()
-	log.Infof("Database connection timeout: %f seconds", timeout.Seconds())
+	log.Debugf("Database connection timeout: %f seconds", timeout.Seconds())
 	for {
 		db, err := gorm.Open(url.Scheme, connString)
 		if err == nil {
