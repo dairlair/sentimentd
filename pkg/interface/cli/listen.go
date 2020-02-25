@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"github.com/dairlair/sentimentd/pkg/interface/cli/util"
 	stan "github.com/nats-io/go-nats-streaming"
 	log "github.com/sirupsen/logrus"
@@ -78,8 +79,8 @@ func readFromReaderAndWriteToWrite(conn stan.Conn, source string, target string,
 
 func processJSONAndPushBack(cb consumer, json string, analyser func(text string) string) {
 	text := gjson.Get(json, "fullText")
-	prediction := analyser(text.Str)
-	data, err := sjson.Set(json, "prediction", prediction)
+	sentiment := analyser(text.Str)
+	data, err := sjson.Set(json, "sentiment", sentiment)
 	if err != nil {
 		log.Errorf("JSON Modification failed: %s", err)
 		return
@@ -88,20 +89,28 @@ func processJSONAndPushBack(cb consumer, json string, analyser func(text string)
 }
 
 func analyse(runner *CommandsRunner, brainsMap map[int64]string, text string) string {
-	json := ""
-	for brainID, reference := range brainsMap {
+	var predictionsData []PredictionData
+	for brainID, brainReference := range brainsMap {
 		prediction, err := runner.app.HumanizedPredict(brainID, text)
 		if err != nil {
 			log.Errorf("Prediction failed. %s", err)
 			continue
 		}
-		predictionJSON, _ := prediction.JSON()
-		json, err = sjson.Set(json, reference, predictionJSON)
-		if err != nil {
-			log.Errorf("JSON set failed. %s", err)
+		for className, probability := range prediction.Probabilities {
+			predictionsData = append(predictionsData, PredictionData{
+				Brain:       brainReference,
+				Class:       className,
+				Probability: probability,
+			})
 		}
 	}
-	return json
+
+	js, err := json.Marshal(predictionsData)
+	if err != nil {
+		log.Errorf("JSON set failed. %s", err)
+	}
+
+	return string(js)
 }
 
 func getBrainsMap(runner *CommandsRunner, references []string) map[int64]string {
@@ -116,4 +125,10 @@ func getBrainsMap(runner *CommandsRunner, references []string) map[int64]string 
 
 	}
 	return brainsMap
+}
+
+type PredictionData struct {
+	Brain string `json:"brain"`
+	Class string `json:"class"`
+	Probability float64 `json:"probability"`
 }
