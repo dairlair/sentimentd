@@ -4,6 +4,8 @@
 package training
 
 import (
+	"fmt"
+	"github.com/cheggaaa/pb/v3"
 	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/dairlair/sentimentd/pkg/domain/service/training/result"
 )
@@ -25,7 +27,7 @@ type ClassServiceInterface interface {
 
 // TokenServiceInterface defines dependency
 type TokenServiceInterface interface {
-	FindOrCreate(brainID int64, text string) (entity.TokenInterface, error)
+	FindOrCreate(brainID int64, text string) int64
 }
 
 // Service provides functionality to brain's training
@@ -47,33 +49,45 @@ func NewTrainingService(
 		classService:      classService,
 		resultsRepository: resultsRepository,
 		tokenizer:         tokenizer,
-		tokenService:      tokenService,
+		tokenService:      NewTextServiceCache(tokenService),
 	}
 }
 
 // Train accepts samples and returns the training result
-func (service Service) Train(brainID int64, samples []entity.Sample, cb func()) error {
+func (service Service) Train(brainID int64, samples []entity.Sample) error {
+	textTrainingResult := service.textTrain(samples)
 	trainingResult := result.NewTrainingResult()
-	for _, sample := range samples {
-		for _, label := range sample.Classes {
-			class, err := service.classService.FindOrCreate(brainID, label)
-			if err != nil {
-				return err
-			}
-			trainingResult.IncClassCount(class.GetID())
 
-			texts := service.tokenizer.Tokenize(sample.Sentence)
-			for _, text := range texts {
-				token, err := service.tokenService.FindOrCreate(brainID, text)
-				if err != nil {
-					return err
-				}
-				trainingResult.IncTokenCount(class.GetID(), token.GetID())
-			}
+	// Copy the samples count
+	trainingResult.SamplesCount = textTrainingResult.SamplesCount
 
-			trainingResult.IncSamplesCount()
+	// Copy the classes frequencies
+	fmt.Println("Class frequencies preparing")
+	bar := pb.StartNew(len(textTrainingResult.TextClassFrequency))
+	var classLabelIDMap = make(map[string]int64, len(textTrainingResult.TextClassFrequency))
+	for classLabel, count := range textTrainingResult.TextClassFrequency {
+		class, err := service.classService.FindOrCreate(brainID, classLabel)
+		if err != nil {
+			return err
 		}
-		cb()
+		classLabelIDMap[classLabel] = class.GetID()
+		trainingResult.ClassFrequency[class.GetID()] = count
+		bar.Increment()
+	}
+	bar.Finish()
+
+	// Copy the tokens frequencies
+	for classLabel, tokenFrequency := range textTrainingResult.TextTokenFrequency {
+		classID := classLabelIDMap[classLabel]
+		fmt.Printf("Save tokens for class [%s]\n", classLabel)
+		bar := pb.StartNew(len(tokenFrequency))
+		trainingResult.TokenFrequency[classID] = make(map[int64]int64, 1)
+		for tokenText, count := range tokenFrequency {
+			tokenID := service.tokenService.FindOrCreate(brainID, tokenText)
+			trainingResult.TokenFrequency[classID][tokenID] = count
+			bar.Increment()
+		}
+		bar.Finish()
 	}
 
 	if err := service.saveTrainingResult(brainID, *trainingResult); err != nil {
@@ -81,6 +95,26 @@ func (service Service) Train(brainID int64, samples []entity.Sample, cb func()) 
 	}
 
 	return nil
+}
+
+// Train accepts samples and returns the training result
+func (service Service) textTrain(samples []entity.Sample) *result.TextTrainingResult {
+	textTrainingResult := result.NewTextTrainingResult()
+	fmt.Println("The text train")
+	bar := pb.StartNew(len(samples))
+	for _, sample := range samples {
+		for _, classLabel := range sample.Classes {
+			textTrainingResult.IncClassCount(classLabel)
+			texts := service.tokenizer.Tokenize(sample.Sentence)
+			for _, tokenText := range texts {
+				textTrainingResult.IncTokenCount(classLabel, tokenText)
+			}
+			textTrainingResult.IncSamplesCount()
+		}
+		bar.Increment()
+	}
+	bar.Finish()
+	return textTrainingResult
 }
 
 // This method saves the collected frequencies into the database

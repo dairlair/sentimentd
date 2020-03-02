@@ -46,7 +46,7 @@ func BenchmarkTrainingService_Train(b *testing.B) {
 
 	service := NewTrainingService(&classService, &resultRepository, &tokenizerService, &tokenService)
 
-	_ = service.Train(brainID, samples, func() {})
+	_ = service.Train(brainID, samples)
 }
 
 func generateClasses(count int64) map[string]entity.ClassInterface {

@@ -5,6 +5,6 @@ import (
 )
 
 // Train implements AppInterface and allows to train brains
-func (app *App) Train(brainID int64, samples []entity.Sample, cb func()) error {
-	return app.trainingService.Train(brainID, samples, cb)
+func (app *App) Train(brainID int64, samples []entity.Sample) error {
+	return app.trainingService.Train(brainID, samples)
 }

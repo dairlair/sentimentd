@@ -1,9 +1,9 @@
 package service
 
 import (
-	. "github.com/dairlair/sentimentd/pkg/domain/entity"
 	. "github.com/dairlair/sentimentd/pkg/domain/repository"
 	"github.com/jinzhu/gorm"
+	log "github.com/sirupsen/logrus"
 )
 
 type TokenService struct {
@@ -16,16 +16,16 @@ func NewTokenService(tokenRepository TokenRepositoryInterface) *TokenService {
 	}
 }
 
-func (service TokenService) FindOrCreate (brainID int64, text string) (TokenInterface, error) {
+func (service TokenService) FindOrCreate (brainID int64, text string) int64 {
 	token, err := service.tokenRepository.FindByBrainAndText(brainID, text)
 
 	if err == gorm.ErrRecordNotFound {
-		return service.tokenRepository.Create(brainID, text)
+		token, err = service.tokenRepository.Create(brainID, text)
 	}
 
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
-	return token, nil
+	return token.GetID()
 }

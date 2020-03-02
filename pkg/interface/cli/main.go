@@ -24,7 +24,7 @@ type AppInterface interface {
 	CreateBrain(name string, description string) (entity.BrainInterface, error)
 	DeleteBrain(id int64) error
 
-	Train(brainID int64, samples []entity.Sample, cb func()) error
+	Train(brainID int64, samples []entity.Sample) error
 
 	// @TODO Not used, remove from here
 	Predict(brainID int64, text string) (prediction entity.Prediction, err error)
