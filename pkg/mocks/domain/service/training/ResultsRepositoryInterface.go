@@ -12,13 +12,13 @@ type ResultsRepositoryInterface struct {
 	mock.Mock
 }
 
-// SaveResult provides a mock function with given fields: brainID, _a1
-func (_m *ResultsRepositoryInterface) SaveResult(brainID int64, _a1 result.TrainingResult) error {
-	ret := _m.Called(brainID, _a1)
+// SaveResult provides a mock function with given fields: brainID, res
+func (_m *ResultsRepositoryInterface) SaveResult(brainID int64, res result.TrainingResult) error {
+	ret := _m.Called(brainID, res)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(int64, result.TrainingResult) error); ok {
-		r0 = rf(brainID, _a1)
+		r0 = rf(brainID, res)
 	} else {
 		r0 = ret.Error(0)
 	}

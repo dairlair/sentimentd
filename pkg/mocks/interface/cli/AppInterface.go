@@ -160,13 +160,13 @@ func (_m *AppInterface) Predict(brainID int64, text string) (entity.Prediction, 
 	return r0, r1
 }
 
-// Train provides a mock function with given fields: brainID, samples, cb
-func (_m *AppInterface) Train(brainID int64, samples []entity.Sample, cb func()) error {
-	ret := _m.Called(brainID, samples, cb)
+// Train provides a mock function with given fields: brainID, samples
+func (_m *AppInterface) Train(brainID int64, samples []entity.Sample) error {
+	ret := _m.Called(brainID, samples)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(int64, []entity.Sample, func()) error); ok {
-		r0 = rf(brainID, samples, cb)
+	if rf, ok := ret.Get(0).(func(int64, []entity.Sample) error); ok {
+		r0 = rf(brainID, samples)
 	} else {
 		r0 = ret.Error(0)
 	}

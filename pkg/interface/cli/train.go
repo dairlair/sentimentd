@@ -9,7 +9,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cheggaaa/pb/v3"
 	"github.com/dairlair/sentimentd/pkg/domain/entity"
 	"github.com/spf13/cobra"
 	"time"
@@ -52,11 +51,7 @@ func trainFromFile(runner *CommandsRunner, brainID int64, filename string) {
 
 func trainFromStream(runner *CommandsRunner, brainID int64, in io.Reader) {
 	samples := readSamples(runner, in)
-	bar := pb.StartNew(len(samples))
-	err := runner.app.Train(brainID, samples, func() {
-		bar.Increment()
-	})
-	bar.Finish()
+	err := runner.app.Train(brainID, samples)
 	if err != nil {
 		runner.Err(err)
 	}
