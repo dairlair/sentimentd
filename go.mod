@@ -12,8 +12,7 @@ require (
 	github.com/nats-io/go-nats v1.7.2 // indirect
 	github.com/nats-io/go-nats-streaming v0.4.4
 	github.com/nats-io/nats-server v1.4.1 // indirect
-	github.com/nats-io/nats-streaming-server v0.16.2 // indirect
-	github.com/nats-io/nkeys v0.1.3 // indirect
+	github.com/nats-io/nats-streaming-server v0.24.3 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.3.2
